@@ -1,0 +1,27 @@
+Agapsys Web Security Framework
+============================
+
+Welcome to the Agapsys Web Security Framework project.
+
+Attention: The framework is under development stage.
+
+Dependencies
+------------
+
+Web Security Framework requires Java 7 compatible runtime and
+depends on the following external libraries:
+
+* Agapsys Security Framework (available at
+  https://github.com/AGAPSYS/security-framework)
+
+Licensing
+---------
+
+Agapsys Web Security Framework is licensed under the Apache License 2.0.
+See the files called LICENSE and NOTICE for more information.
+
+Contact
+-------
+
+  o For general information visit the main project site at
+	https://github.com/AGAPSYS/web-security-framework
