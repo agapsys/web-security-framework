@@ -18,6 +18,7 @@ package com.agapsys.security.web;
 
 import com.agapsys.security.Role;
 import com.agapsys.security.AbstractSecuredAction;
+import com.agapsys.security.DuplicateException;
 import com.agapsys.security.User;
 import com.agapsys.security.SecurityException;
 import java.util.Objects;
@@ -103,11 +104,11 @@ public abstract class SecuredWebAction extends AbstractSecuredAction {
 		super();
 	}
 	
-	public SecuredWebAction(Role...requiredRoles) {
+	public SecuredWebAction(Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
 	}
 	
-	public SecuredWebAction(String...requiredRoles) {
+	public SecuredWebAction(String...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
 	}
 
@@ -166,7 +167,7 @@ public abstract class SecuredWebAction extends AbstractSecuredAction {
 
 	protected void postRun(HttpServletRequest request, Object...params) {}
 	
-	
+
 	public final void execute(HttpServletRequest request, HttpServletResponse response, Object...params) throws WebSecurityException {
 		User user = getSessionUser(request);
 		try {
