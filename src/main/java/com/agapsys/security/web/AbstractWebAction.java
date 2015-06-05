@@ -29,24 +29,45 @@ import javax.servlet.http.HttpSession;
 
 public abstract class AbstractWebAction extends AbstractAction {
 	// CLASS SCOPE =============================================================
-	private static class InternalSecurityException extends RuntimeException {
-		public InternalSecurityException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {}
+	private static class InternalWebSecurityException extends RuntimeException {
+		public InternalWebSecurityException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {}
 	}
-
-	private static final int   XSRF_TOKEN_LENGTH      = 16;
+	
+	private static class InternalMethodNotAllowedException extends RuntimeException {
+		public InternalMethodNotAllowedException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {}
+	}
+	
+	private static final int   DEFAULT_XSRF_TOKEN_LENGTH      = 128;
+	
 	public static final String XSRF_HEADER            = "X-Csrf-Token";
 	public static final String SESSION_ATTR_USER       = "com.agapsys.security.web.user";
 	public static final String SESSION_ATTR_XSRF_TOKEN = "com.agapsys.security.web.xsrf";
-
 	
-	/** Returns a random string with given length (chars: [a-z][A-Z][0-9]). */
-	private static String getRandomString(int length) {
+	/** 
+	 * Generates a random string (chars: [a-z][A-Z][0-9]).
+	 * @param length length of returned string
+	 * @return a random string with given length.
+	 * @throws IllegalArgumentException if (length &lt; 1)
+	 */
+	private static String getRandomString(int length) throws IllegalArgumentException {
 		char[] chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 		return getRandomString(length, chars);
 	}
 	
-	/** Returns an random string with given length. */
-	private static String getRandomString(int length, char[] chars) {
+	/**
+	 * Generates a random String 
+	 * @param length length of returned string
+	 * @param chars set of chars which will be using during random string generation
+	 * @return a random string with given length.
+	 * @throws IllegalArgumentException if (length &lt; 1 || chars == null || chars.length == 0)
+	 */
+	private static String getRandomString(int length, char[] chars) throws IllegalArgumentException {
+		if (length < 1)
+			throw new IllegalArgumentException("Invalid length: " + length);
+		
+		if (chars == null || chars.length == 0)
+			throw new IllegalArgumentException("Null/Empty chars");
+		
 		StringBuilder sb = new StringBuilder();
 		Random random = new Random();
 		for (int i = 0; i < length; i++) {
@@ -57,32 +78,7 @@ public abstract class AbstractWebAction extends AbstractAction {
 	}
 	
 	
-	public static void registerSessionUser(HttpServletRequest request, HttpServletResponse response, User user) {
-		if (request == null)
-			throw new IllegalArgumentException("Null request");
-
-		if (user == null)
-			throw new IllegalArgumentException("Null user");
-
-		// Registers user in session...
-		HttpSession session = request.getSession();
-		session.setAttribute(SESSION_ATTR_USER, user);
-		
-		// Assigns a XSRF token for this user
-		String xsrfToken = getRandomString(XSRF_TOKEN_LENGTH);
-		session.setAttribute(SESSION_ATTR_XSRF_TOKEN, xsrfToken);
-		response.setHeader(AbstractWebAction.XSRF_HEADER, xsrfToken);
-	}
-	
-	public static void removeSessionUser(HttpServletRequest request) {
-		if (request == null)
-			throw new IllegalArgumentException("Null request");
-
-		request.getSession().invalidate();
-	}
-	
-	
-	public static Object getSessionAttribute(HttpServletRequest request, String attribute) {
+	protected static Object getSessionAttribute(HttpServletRequest request, String attribute) {
 		if (request == null)
 			throw new IllegalArgumentException("Null request");
 
@@ -90,28 +86,70 @@ public abstract class AbstractWebAction extends AbstractAction {
 		return session.getAttribute(attribute);
 	}
 	
-	public static User getSessionUser(HttpServletRequest request) {
+	protected static void setSessionAttribute(HttpServletRequest request, String name, String value) {
+		HttpSession session = request.getSession();
+		session.setAttribute(name, value);
+	}
+	
+	protected static void invalidateSession(HttpServletRequest request) {
+		if (request == null)
+			throw new IllegalArgumentException("Null request");
+
+		request.getSession().invalidate();
+	}
+
+	
+	protected static User getSessionUser(HttpServletRequest request) {
 		return (User) getSessionAttribute(request, SESSION_ATTR_USER);
 	}
 	
-	public static String getSessionXsrfToken(HttpServletRequest request) {
+	
+	protected static String getSessionXsrfToken(HttpServletRequest request) {
 		return (String) getSessionAttribute(request, SESSION_ATTR_XSRF_TOKEN);
+	}
+	
+	
+	protected static HttpMethod getMethod(HttpServletRequest request) {
+		return HttpMethod.fromString(request.getMethod());
 	}
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
+	private HttpMethod acceptedMethod = null;
+	
+	private void setMethod(HttpMethod method) throws IllegalArgumentException {
+		if (method == null)
+			throw new IllegalArgumentException("Null method");
+		
+		this.acceptedMethod = method;
+	}
+			
 	public AbstractWebAction() {
 		super();
 	}
 	
+	public AbstractWebAction(HttpMethod acceptedMethod) throws IllegalArgumentException {
+		super();
+		setMethod(acceptedMethod);
+	}
+
 	public AbstractWebAction(Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
+	}
+		
+	public AbstractWebAction(HttpMethod acceptedMethod, Role...requiredRoles) throws IllegalArgumentException {
+		super(requiredRoles);
+		setMethod(acceptedMethod);
 	}
 	
 	public AbstractWebAction(String...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
 	}
-
+	
+	public AbstractWebAction(HttpMethod acceptedMethod, String...requiredRoles) throws IllegalArgumentException, DuplicateException {
+		super(requiredRoles);
+		setMethod(acceptedMethod);
+	}
 	
 	@Override
 	protected final void preRun(User user, Object...params) {
@@ -137,12 +175,16 @@ public abstract class AbstractWebAction extends AbstractAction {
 		}
 		
 		Object[] extraParams = params.length >= 2 ? (Object[])params[2] : new Object[0];
-					
+		
+		HttpMethod reqMethod = getMethod(request);
+		if (acceptedMethod != null && acceptedMethod != reqMethod)
+			throw new InternalMethodNotAllowedException(request, response, params, "Method not allowed: " + reqMethod.name());
+		
 		String requestXsrfToken = request.getHeader(XSRF_HEADER);
 		String sessionXsrfToken = getSessionXsrfToken(request);
 
-		if (!Objects.equals(requestXsrfToken, sessionXsrfToken)) {
-			throw new InternalSecurityException(request, response, params, "Invalid XSRF token");
+		if (!Objects.equals(requestXsrfToken, sessionXsrfToken) && !getRequiredRoles().isEmpty()) {
+			throw new InternalWebSecurityException(request, response, params, "Invalid XSRF token");
 		} else  {
 			preRun(request, response, extraParams);
 		}
@@ -166,13 +208,45 @@ public abstract class AbstractWebAction extends AbstractAction {
 	}
 
 	protected void postRun(HttpServletRequest request, Object...params) {}
+
+	
+	public HttpMethod getAcceptedMethod() {
+		return acceptedMethod;
+	}
+	
+	public void setAcceptedMethod(HttpMethod method) throws IllegalArgumentException {
+		setMethod(method);
+	}
+	
+	protected int getXsrfTokenLength() {
+		return DEFAULT_XSRF_TOKEN_LENGTH;
+	}
+	
+	protected void registerSessionUser(HttpServletRequest request, HttpServletResponse response, User user) {
+		if (request == null)
+			throw new IllegalArgumentException("Null request");
+
+		if (user == null)
+			throw new IllegalArgumentException("Null user");
+
+		// Registers user in session...
+		HttpSession session = request.getSession();
+		session.setAttribute(SESSION_ATTR_USER, user);
+		
+		// Assigns a XSRF token for this user
+		String xsrfToken = getRandomString(getXsrfTokenLength());
+		session.setAttribute(SESSION_ATTR_XSRF_TOKEN, xsrfToken);
+		response.setHeader(XSRF_HEADER, xsrfToken);
+	}
 	
 
-	public final void execute(HttpServletRequest request, HttpServletResponse response, Object...params) throws WebSecurityException {
+	public final void execute(HttpServletRequest request, HttpServletResponse response, Object...params) throws MethodNotAllowedException, WebSecurityException  {
 		User user = getSessionUser(request);
 		try {
 			super.execute(user, request, response, params);
-		} catch (SecurityException | InternalSecurityException ex) {
+		} catch (InternalMethodNotAllowedException ex) {
+			throw new MethodNotAllowedException(request, response, params, ex.getMessage());
+		} catch (SecurityException | InternalWebSecurityException ex) {
 			throw new WebSecurityException(request, response, params, ex.getMessage());
 		}
 	}

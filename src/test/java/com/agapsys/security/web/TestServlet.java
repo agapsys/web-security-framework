@@ -16,31 +16,63 @@
 
 package com.agapsys.security.web;
 
+import com.agapsys.security.DuplicateException;
 import com.agapsys.security.Role;
-import com.agapsys.security.RoleRepository;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/test-servlet")
-public class TestServlet extends HttpServlet {
-	public static final Role TEST_ROLE;
+@WebServlet(urlPatterns = {TestServlet.URL_PUBLIC, TestServlet.URL_SECURED, TestServlet.URL_EXTRA_SECURED})
+public class TestServlet extends AbstractHttpServlet {
+	// CLASS SCOPE =============================================================
+	public static final String URL_PUBLIC = "/public";
+	public static final String URL_SECURED = "/secured";
+	public static final String URL_EXTRA_SECURED = "/extra-secured";
 	
-	static {
-		RoleRepository roles = RoleRepository.getSingletonInstance();
-		TEST_ROLE = roles.createRole("com.agapsys.security.web.testRole");
-	}
-	
-	private static final AbstractWebAction SECURED_ACTION = new AbstractWebAction(TEST_ROLE) {
+	private static final class TestAction extends AbstractWebAction {
 
+		public TestAction(Role... requiredRoles) throws IllegalArgumentException, DuplicateException {
+			super(requiredRoles);
+		}
+
+		public TestAction(HttpMethod acceptedMethod, Role... requiredRoles) throws IllegalArgumentException {
+			super(acceptedMethod, requiredRoles);
+		}
+		
 		@Override
 		protected void run(HttpServletRequest request, HttpServletResponse response, Object... params) {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			TestUser connectedUser = (TestUser) getSessionUser(request);
+			
+			try {
+				response.getWriter().print(String.format("Hi %s", connectedUser != null ? connectedUser.getUsername() : "<anonymous>"));
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
 		}
-	};
+	}
 	
-	private static final AbstractWebAction
+	private static final AbstractWebAction PUBLIC_ACTION = new TestAction(HttpMethod.GET);
 	
-	do
+	private static final AbstractWebAction SECURED_ACTION = new TestAction(HttpMethod.GET, TestDefs.SECURED_ROLE);
+	
+	private static final AbstractWebAction EXTRA_SECURED_ACTION = new TestAction(HttpMethod.GET, TestDefs.EXTRA_SECURED_ROLE);
+	
+	private static final Map<String, AbstractWebAction> ACTION_MAP = new LinkedHashMap<>();
+	
+	static {
+		ACTION_MAP.put(URL_PUBLIC, PUBLIC_ACTION);
+		ACTION_MAP.put(URL_SECURED, SECURED_ACTION);
+		ACTION_MAP.put(URL_EXTRA_SECURED, EXTRA_SECURED_ACTION);
+	}
+	// =========================================================================
+	
+	// INSTANCE SCOPE ==========================================================
+	@Override
+	protected AbstractWebAction getAction(String servletPath) {
+		return ACTION_MAP.get(servletPath);
+	}
+	// =========================================================================
 }
