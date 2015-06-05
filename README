@@ -5,6 +5,12 @@ Welcome to the Agapsys Web Security Framework project.
 
 Attention: The framework is under development stage.
 
+Compiling
+---------
+
+The first build may take a long time as Maven downloads all the
+dependencies.
+
 Dependencies
 ------------
 
@@ -12,7 +18,12 @@ Web Security Framework requires Java 7 compatible runtime and
 depends on the following external libraries:
 
 * Agapsys Security Framework (available at
-  https://github.com/AGAPSYS/security-framework)
+  https://github.com/agapsys/security-framework)
+
+* Agapsys Servlet Testing Framework (available at
+ https://github.com/agapsys/servlet-testing-framework)
+
+(for detailed information on external dependencies please see pom.xml)
 
 Licensing
 ---------
