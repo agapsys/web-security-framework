@@ -82,7 +82,7 @@ public abstract class AbstractWebAction extends AbstractAction {
 	}
 	
 	
-	private static Object getSessionAttribute(HttpServletRequest request, String attribute) {
+	public static Object getSessionAttribute(HttpServletRequest request, String attribute) {
 		if (request == null)
 			throw new IllegalArgumentException("Null request");
 
@@ -90,11 +90,11 @@ public abstract class AbstractWebAction extends AbstractAction {
 		return session.getAttribute(attribute);
 	}
 	
-	private static User getSessionUser(HttpServletRequest request) {
+	public static User getSessionUser(HttpServletRequest request) {
 		return (User) getSessionAttribute(request, SESSION_ATTR_USER);
 	}
 	
-	private static String getSessionXsrfToken(HttpServletRequest request) {
+	public static String getSessionXsrfToken(HttpServletRequest request) {
 		return (String) getSessionAttribute(request, SESSION_ATTR_XSRF_TOKEN);
 	}
 	// =========================================================================
