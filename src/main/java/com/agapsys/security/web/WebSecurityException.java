@@ -24,7 +24,7 @@ public class WebSecurityException extends Exception {
 	private final HttpServletResponse response;
 	private final Object[] params;
 	
-	public WebSecurityException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {
+	WebSecurityException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {
 		super(message);
 		this.request = request;
 		this.response = response;
