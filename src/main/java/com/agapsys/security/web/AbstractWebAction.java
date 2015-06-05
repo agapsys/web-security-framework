@@ -17,7 +17,7 @@
 package com.agapsys.security.web;
 
 import com.agapsys.security.Role;
-import com.agapsys.security.AbstractSecuredAction;
+import com.agapsys.security.AbstractAction;
 import com.agapsys.security.DuplicateException;
 import com.agapsys.security.User;
 import com.agapsys.security.SecurityException;
@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-public abstract class SecuredWebAction extends AbstractSecuredAction {
+public abstract class AbstractWebAction extends AbstractAction {
 	// CLASS SCOPE =============================================================
 	private static class InternalSecurityException extends RuntimeException {
 		public InternalSecurityException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {}
@@ -71,7 +71,7 @@ public abstract class SecuredWebAction extends AbstractSecuredAction {
 		// Assigns a XSRF token for this user
 		String xsrfToken = getRandomString(XSRF_TOKEN_LENGTH);
 		session.setAttribute(SESSION_ATTR_XSRF_TOKEN, xsrfToken);
-		response.setHeader(SecuredWebAction.XSRF_HEADER, xsrfToken);
+		response.setHeader(AbstractWebAction.XSRF_HEADER, xsrfToken);
 	}
 	
 	public static void removeSessionUser(HttpServletRequest request) {
@@ -100,15 +100,15 @@ public abstract class SecuredWebAction extends AbstractSecuredAction {
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
-	public SecuredWebAction() {
+	public AbstractWebAction() {
 		super();
 	}
 	
-	public SecuredWebAction(Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
+	public AbstractWebAction(Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
 	}
 	
-	public SecuredWebAction(String...requiredRoles) throws IllegalArgumentException, DuplicateException {
+	public AbstractWebAction(String...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
 	}
 
@@ -176,4 +176,5 @@ public abstract class SecuredWebAction extends AbstractSecuredAction {
 			throw new WebSecurityException(request, response, params, ex.getMessage());
 		}
 	}
+	// =========================================================================
 }
