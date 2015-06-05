@@ -20,8 +20,8 @@ depends on the following external libraries:
 * Agapsys Security Framework (available at
   https://github.com/agapsys/security-framework)
 
-* Agapsys Servlet Testing Framework (available at
- https://github.com/agapsys/servlet-testing-framework)
+* Agapsys Servlet Testing Framework (TESTING. The library is available
+  at https://github.com/agapsys/servlet-testing-framework)
 
 (for detailed information on external dependencies please see pom.xml)
 
