@@ -19,6 +19,7 @@ package com.agapsys.security.web;
 import com.agapsys.security.Role;
 import com.agapsys.security.AbstractAction;
 import com.agapsys.security.DuplicateException;
+import com.agapsys.security.RoleNotFoundException;
 import com.agapsys.security.User;
 import com.agapsys.security.SecurityException;
 import java.util.Objects;
@@ -77,20 +78,34 @@ public abstract class AbstractWebAction extends AbstractAction {
 		return sb.toString();
 	}
 	
-	
-	protected static Object getSessionAttribute(HttpServletRequest request, String attribute) {
+	/** 
+	 * @param request HTTP request
+	 * @param attributeName desired attribute.
+	 * @return An attribute from request session. If there is such attribute, returns null
+	 */
+	protected static Object getSessionAttribute(HttpServletRequest request, String attributeName) {
 		if (request == null)
 			throw new IllegalArgumentException("Null request");
 
 		HttpSession session = request.getSession();
-		return session.getAttribute(attribute);
+		return session.getAttribute(attributeName);
 	}
 	
+	/**
+	 * Sets an attribute into request session
+	 * @param request HTTP request
+	 * @param name attribute name
+	 * @param value attribute value
+	 */
 	protected static void setSessionAttribute(HttpServletRequest request, String name, String value) {
 		HttpSession session = request.getSession();
 		session.setAttribute(name, value);
 	}
 	
+	/** 
+	 * Invalidates request session.
+	 * @param request HTTP request
+	 */
 	protected static void invalidateSession(HttpServletRequest request) {
 		if (request == null)
 			throw new IllegalArgumentException("Null request");
@@ -98,17 +113,26 @@ public abstract class AbstractWebAction extends AbstractAction {
 		request.getSession().invalidate();
 	}
 
-	
+	/**
+	 * @param request HTTP request
+	 * @return Associated user registered into request session. If there is no registered user, returns null instead.
+	 */
 	protected static User getSessionUser(HttpServletRequest request) {
 		return (User) getSessionAttribute(request, SESSION_ATTR_USER);
 	}
 	
-	
+	/**
+	 * @return XSRF (Cross-Site Request Forgery) token associated to request session
+	 * @param request HTTP request
+	 */
 	protected static String getSessionXsrfToken(HttpServletRequest request) {
 		return (String) getSessionAttribute(request, SESSION_ATTR_XSRF_TOKEN);
 	}
 	
-	
+	/** 
+	 * @returns HttpMethod used by given request
+	 * @param request HTTP request
+	 */
 	protected static HttpMethod getMethod(HttpServletRequest request) {
 		return HttpMethod.fromString(request.getMethod());
 	}
@@ -123,30 +147,65 @@ public abstract class AbstractWebAction extends AbstractAction {
 		
 		this.acceptedMethod = method;
 	}
-			
+	
+	/** Creates an action with public access and accepts any HTTP method. */
 	public AbstractWebAction() {
 		super();
 	}
 	
+	/** 
+	 * Creates an action that accepts only given HTTP method.
+	 * @param acceptedMethod accepted HTTP method
+	 * @throws IllegalArgumentException if acceptedMethod == null
+	 */
 	public AbstractWebAction(HttpMethod acceptedMethod) throws IllegalArgumentException {
 		super();
 		setMethod(acceptedMethod);
 	}
 
+	/**
+	 * Creates an action the are restricted to users with given roles (all HTTP methods are accepted)
+	 * @param requiredRoles required roles for execution.
+	 * @throws IllegalArgumentException if any of given roles is null
+	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
+	 */
 	public AbstractWebAction(Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
 	}
-		
-	public AbstractWebAction(HttpMethod acceptedMethod, Role...requiredRoles) throws IllegalArgumentException {
+	
+	/**
+	 * Creates an action the are restricted to users with given roles and accepts only given HTTP method
+	 * @param requiredRoles required roles for execution.
+	 * @param acceptedMethod accepted HTTP method
+	 * @throws IllegalArgumentException if any of given roles is null
+	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
+	 */
+	public AbstractWebAction(HttpMethod acceptedMethod, Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
 		setMethod(acceptedMethod);
 	}
 	
-	public AbstractWebAction(String...requiredRoles) throws IllegalArgumentException, DuplicateException {
+	
+	/**
+	 * Creates an action the are restricted to users with given roles (all HTTP methods are accepted)
+	 * @param requiredRoleNames required roles for execution.
+	 * @throws IllegalArgumentException if any of given roles is null
+	 * @throws RoleNotFoundException if any of given roleNames is not registered in {@linkplain RoleRepository}
+	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
+	 */
+	public AbstractWebAction(String...requiredRoles) throws IllegalArgumentException, DuplicateException, RoleNotFoundException {
 		super(requiredRoles);
 	}
 	
-	public AbstractWebAction(HttpMethod acceptedMethod, String...requiredRoles) throws IllegalArgumentException, DuplicateException {
+	/**
+	 * Creates an action the are restricted to users with given roles and accepts only given HTTP method
+	 * @param requiredRoleNames required roles for execution.
+	 * @param acceptedMethod accepted HTTP method
+	 * @throws IllegalArgumentException if any of given roles is null
+	 * @throws RoleNotFoundException if any of given roleNames is not registered in {@linkplain RoleRepository}
+	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
+	 */
+	public AbstractWebAction(HttpMethod acceptedMethod, String...requiredRoles) throws IllegalArgumentException, DuplicateException, RoleNotFoundException{
 		super(requiredRoles);
 		setMethod(acceptedMethod);
 	}

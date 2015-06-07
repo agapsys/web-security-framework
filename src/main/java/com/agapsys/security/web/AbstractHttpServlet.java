@@ -25,6 +25,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public abstract class AbstractHttpServlet extends HttpServlet {
+	/**
+	 * @return Associated action to given servlet path. Application shall implement this method.
+	 * @param servletPath
+	 */
 	protected abstract AbstractWebAction getAction(String servletPath);
 
 	@Override
@@ -83,7 +87,11 @@ public abstract class AbstractHttpServlet extends HttpServlet {
 		super.doTrace(req, resp);
 	}
 	
-	
+	/** 
+	 * Called when there is a {@linkplain WebSecurityException} during servlet processing.
+	 * Default implementation just sends a HTTP 403 status in the response
+	 * @param exception exception
+	 */
 	protected void onWebSecutiryException(WebSecurityException exception) {
 		try {
 			exception.getResponse().sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -92,6 +100,11 @@ public abstract class AbstractHttpServlet extends HttpServlet {
 		}
 	}
 	
+	/** 
+	 * Called when there is a {@linkplain MethodNotAllowedException} during servlet processing.
+	 * Default implementation just sends a HTTP 405 status in the response
+	 * @param exception exception
+	 */
 	protected void onMethodNotAllowed(MethodNotAllowedException exception) {
 		try {
 			exception.getResponse().sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
