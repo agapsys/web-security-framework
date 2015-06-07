@@ -38,7 +38,7 @@ public class TestUser extends AbstractUser implements Serializable {
 			throw new IllegalArgumentException("Invalid username: " + username);
 		
 		if (APP_USERS.containsKey(username))
-			throw new DuplicateException(String.format("An user with the same username (%s) is already registered", username));
+			throw new IllegalArgumentException(String.format("An user with the same username (%s) is already registered", username));
 		
 		TestUser user = new TestUser(username, password, roles);
 		APP_USERS.put(username, user);
