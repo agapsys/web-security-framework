@@ -24,7 +24,7 @@ public enum HttpMethod {
 	PUT,
 	TRACE;
 	
-	public static HttpMethod fromString(String method) {
+	static HttpMethod fromString(String method) {
 		switch (method) {
 			case "GET":
 				return GET;
