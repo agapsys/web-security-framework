@@ -18,11 +18,39 @@ limitations under the License.
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+	
     <groupId>com.agapsys.libs</groupId>
     <artifactId>web-security-frameworwk</artifactId>
-	<name>Web Security Framework</name>
     <version>0.1.0</version>
     <packaging>jar</packaging>
+	
+	<properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
+	
+	<name>Agapsys Web Security Framework</name>
+	<description>Action-based security framework for servlet applications</description>
+	<url>https://github.com/agapsys/web-security-framework</url>
+	
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	
+	<scm>
+		<connection>scm:git:git@github.com:agapsys/web-security-framework.git</connection>
+		<url>git@github.com:agapsys/web-security-framework.git</url>
+	</scm>
+	
+	<organization>
+		<name>Agapsys Tecnologia Ltda-ME</name>
+		<url>http://www.agapsys.com</url>
+	</organization>
+	
     <dependencies>
         <dependency>
             <groupId>com.agapsys.libs</groupId>
@@ -48,9 +76,4 @@ limitations under the License.
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>
 </project>
