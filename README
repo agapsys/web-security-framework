@@ -3,7 +3,8 @@ Agapsys Web Security Framework
 
 Welcome to the Agapsys Web Security Framework project.
 
-Attention: The framework is under development stage.
+Attention: If you obtained the source from a snapshot branch be aware that 
+such branch can contain unstable code or even uncompilable code.
 
 Compiling
 ---------
