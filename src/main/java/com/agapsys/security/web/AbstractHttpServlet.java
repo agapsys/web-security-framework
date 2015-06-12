@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 public abstract class AbstractHttpServlet extends HttpServlet {
 	/**
 	 * @return Associated action to given servlet path. Application shall implement this method.
-	 * @param servletPath
+	 * @param servletPath servlet path
 	 */
 	protected abstract AbstractWebAction getAction(String servletPath);
 

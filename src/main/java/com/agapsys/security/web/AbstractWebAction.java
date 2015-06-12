@@ -20,6 +20,7 @@ import com.agapsys.security.Role;
 import com.agapsys.security.AbstractAction;
 import com.agapsys.security.DuplicateException;
 import com.agapsys.security.RoleNotFoundException;
+import com.agapsys.security.RoleRepository;
 import com.agapsys.security.User;
 import com.agapsys.security.SecurityException;
 import java.util.Objects;
@@ -130,7 +131,7 @@ public abstract class AbstractWebAction extends AbstractAction {
 	}
 	
 	/** 
-	 * @returns HttpMethod used by given request
+	 * @return HttpMethod used by given request
 	 * @param request HTTP request
 	 */
 	protected static HttpMethod getMethod(HttpServletRequest request) {
@@ -193,8 +194,8 @@ public abstract class AbstractWebAction extends AbstractAction {
 	 * @throws RoleNotFoundException if any of given roleNames is not registered in {@linkplain RoleRepository}
 	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
 	 */
-	public AbstractWebAction(String...requiredRoles) throws IllegalArgumentException, DuplicateException, RoleNotFoundException {
-		super(requiredRoles);
+	public AbstractWebAction(String...requiredRoleNames) throws IllegalArgumentException, DuplicateException, RoleNotFoundException {
+		super(requiredRoleNames);
 	}
 	
 	/**
@@ -205,8 +206,8 @@ public abstract class AbstractWebAction extends AbstractAction {
 	 * @throws RoleNotFoundException if any of given roleNames is not registered in {@linkplain RoleRepository}
 	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
 	 */
-	public AbstractWebAction(HttpMethod acceptedMethod, String...requiredRoles) throws IllegalArgumentException, DuplicateException, RoleNotFoundException{
-		super(requiredRoles);
+	public AbstractWebAction(HttpMethod acceptedMethod, String...requiredRoleNames) throws IllegalArgumentException, DuplicateException, RoleNotFoundException{
+		super(requiredRoleNames);
 		setMethod(acceptedMethod);
 	}
 	
