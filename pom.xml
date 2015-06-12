@@ -30,7 +30,7 @@ limitations under the License.
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
 	
-	<name>Agapsys Web Security Framework</name>
+	<name>Web Security Framework</name>
 	<description>Action-based security framework for servlet applications</description>
 	<url>https://github.com/agapsys/web-security-framework</url>
 	
