@@ -41,6 +41,15 @@ limitations under the License.
 		</license>
 	</licenses>
 	
+	<developers>
+		<developer>
+			<name>Leandro Oliveira</name>
+			<email>leandro@agapsys.com</email>
+			<organization>Agapsys Tecnologia Ltda-ME</organization>
+			<organizationUrl>http://www.agapsys.com</organizationUrl>
+		</developer>
+	</developers>
+	
 	<scm>
 		<connection>scm:git:git@github.com:agapsys/web-security-framework.git</connection>
 		<url>git@github.com:agapsys/web-security-framework.git</url>
