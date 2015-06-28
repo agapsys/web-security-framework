@@ -17,7 +17,6 @@
 package com.agapsys.security.web;
 
 import java.io.IOException;
-import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -28,7 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 public abstract class AbstractHttpServlet extends HttpServlet {
 	/**
 	 * @return Associated action to given servlet path. Application shall implement this method.
-	 * @param servletPath servlet path
+	 * @param req servlet request
+	 * @param resp servlet response
 	 */
 	protected abstract AbstractWebAction getAction(HttpServletRequest req, HttpServletResponse resp);
 
