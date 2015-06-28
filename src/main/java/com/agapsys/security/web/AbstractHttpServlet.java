@@ -17,6 +17,7 @@
 package com.agapsys.security.web;
 
 import java.io.IOException;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -29,17 +30,16 @@ public abstract class AbstractHttpServlet extends HttpServlet {
 	 * @return Associated action to given servlet path. Application shall implement this method.
 	 * @param servletPath servlet path
 	 */
-	protected abstract AbstractWebAction getAction(String servletPath);
+	protected abstract AbstractWebAction getAction(HttpServletRequest req, HttpServletResponse resp);
 
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		try {
-			AbstractWebAction action = getAction(req.getServletPath());
+			AbstractWebAction action = getAction(req, resp);
 			
-			if (action == null)
-				throw new RuntimeException(String.format("There is no action for '%s'", req.getServletPath()));
-			
-			action.execute(req, resp);
+			if (action != null) {
+				action.execute(req, resp);
+			}
 		} catch(MethodNotAllowedException ex) {
 			onMethodNotAllowed(ex);
 		}catch (WebSecurityException ex) {

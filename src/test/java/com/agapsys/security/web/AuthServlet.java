@@ -71,7 +71,8 @@ public class AuthServlet extends AbstractHttpServlet {
 	
 	// INSTANCE SCOPE ==========================================================
 	@Override
-	protected AbstractWebAction getAction(String servletPath) {
+	protected AbstractWebAction getAction(HttpServletRequest req, HttpServletResponse resp) {
+		String servletPath = req.getServletPath();
 		switch (servletPath) {
 			case URL_LOGIN:
 				return LOGIN_ACTION;
@@ -84,6 +85,4 @@ public class AuthServlet extends AbstractHttpServlet {
 		}
 	}
 	// =========================================================================
-
-
 }

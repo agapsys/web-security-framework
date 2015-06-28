@@ -114,6 +114,31 @@ public class WebSecurityTest {
 	}
 	
 	@Test
+	public void accessingParamterAction() {
+		HttpResponse response = sc.doGet(
+			String.format(
+				"%s?%s=%s", 
+				TestServlet.URL_PARAM_ACTION,
+				TestServlet.PARAM_ACTION_TYPE,
+				TestServlet.PARAM_ACTION1_VALUE
+			)
+		);
+		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
+		assertEquals("action1", response.getResponseBody());
+		
+		response = sc.doGet(
+			String.format(
+				"%s?%s=%s", 
+				TestServlet.URL_PARAM_ACTION,
+				TestServlet.PARAM_ACTION_TYPE,
+				TestServlet.PARAM_ACTION2_VALUE
+			)
+		);
+		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
+		assertEquals("action2", response.getResponseBody());
+	}
+	
+	@Test
 	public void accessingRestrictedUrlLoggedInButWithXsrfToken() {
 		HttpClient client = new HttpClient();
 		
