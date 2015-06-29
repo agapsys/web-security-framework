@@ -32,13 +32,23 @@ public abstract class AbstractHttpServlet extends HttpServlet {
 	 */
 	protected abstract AbstractWebAction getAction(HttpServletRequest req, HttpServletResponse resp);
 
+	/**
+	 * 
+	 * @param req servlet request
+	 * @param resp servlet response
+	 * @return paramters to be passed to action returned by {@linkplain AbstractHttpServlet#getAction(HttpServletRequest, HttpServletResponse)}. Default implementation returns an empty array
+	 */
+	protected Object[] getActionParameters(HttpServletRequest req, HttpServletResponse resp) {
+		return new Object[0];
+	}
+	
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		try {
 			AbstractWebAction action = getAction(req, resp);
 			
 			if (action != null) {
-				action.execute(req, resp);
+				action.execute(req, resp, getActionParameters(req, resp));
 			}
 		} catch(MethodNotAllowedException ex) {
 			onMethodNotAllowed(ex);
