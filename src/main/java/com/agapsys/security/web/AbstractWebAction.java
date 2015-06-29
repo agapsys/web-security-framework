@@ -267,7 +267,7 @@ public abstract class AbstractWebAction extends AbstractAction {
 		postRun((HttpServletRequest) params[0], (HttpServletResponse) params[1], (Object[]) params[2]);
 	}
 
-	protected void postRun(HttpServletRequest request, Object...params) {}
+	protected void postRun(HttpServletRequest request, HttpServletResponse response, Object...params) {}
 
 	
 	public HttpMethod getAcceptedMethod() {
