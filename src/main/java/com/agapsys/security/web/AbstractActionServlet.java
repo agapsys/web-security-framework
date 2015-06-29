@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class AbstractHttpServlet extends HttpServlet {
+public abstract class AbstractActionServlet extends HttpServlet {
 	/**
 	 * @return Associated action to given servlet path. Application shall implement this method.
 	 * @param req servlet request
@@ -36,7 +36,7 @@ public abstract class AbstractHttpServlet extends HttpServlet {
 	 * 
 	 * @param req servlet request
 	 * @param resp servlet response
-	 * @return paramters to be passed to action returned by {@linkplain AbstractHttpServlet#getAction(HttpServletRequest, HttpServletResponse)}. Default implementation returns an empty array
+	 * @return paramters to be passed to action returned by {@linkplain AbstractActionServlet#getAction(HttpServletRequest, HttpServletResponse)}. Default implementation returns an empty array
 	 */
 	protected Object[] getActionParameters(HttpServletRequest req, HttpServletResponse resp) {
 		return new Object[0];

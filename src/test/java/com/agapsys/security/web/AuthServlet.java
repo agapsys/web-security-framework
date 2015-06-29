@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(urlPatterns = {AuthServlet.URL_LOGIN, AuthServlet.URL_LOGOUT})
-public class AuthServlet extends AbstractHttpServlet {
+public class AuthServlet extends AbstractActionServlet {
 	// CLASS SCOPE =============================================================
 	public static final String URL_LOGIN = "/login";
 	public static final String URL_LOGOUT = "/logout";

@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(urlPatterns = {TestServlet.URL_PUBLIC, TestServlet.URL_SECURED, TestServlet.URL_EXTRA_SECURED, TestServlet.URL_PARAM_ACTION})
-public class TestServlet extends AbstractHttpServlet {
+public class TestServlet extends AbstractActionServlet {
 	// CLASS SCOPE =============================================================
 	public static final String URL_PUBLIC = "/public";
 	public static final String URL_SECURED = "/secured";
