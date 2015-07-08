@@ -30,8 +30,6 @@ public class AuthServlet extends AbstractActionServlet {
 	public static final String PARAM_USERNAME = "username";
 	public static final String PARAM_PASSOWRD = "password";
 	
-	public static final int    XSRF_TOKEN_LENGTH = 8;
-
 	private static final AbstractWebAction LOGIN_ACTION = new AbstractWebAction(HttpMethod.POST) {
 		@Override
 		protected void run(HttpServletRequest request, HttpServletResponse response, Object... params) {
@@ -53,18 +51,13 @@ public class AuthServlet extends AbstractActionServlet {
 				throw new RuntimeException(ex);
 			}
 		}
-		
-		@Override
-		protected int getXsrfTokenLength() {
-			return XSRF_TOKEN_LENGTH;
-		}
 	};
 	
 	private static final AbstractWebAction LOGOUT_ACTION = new AbstractWebAction(HttpMethod.GET) {
 
 		@Override
 		protected void run(HttpServletRequest request, HttpServletResponse response, Object... params) {
-			invalidateSession(request);
+			Session.invalidateSession(request);
 		}
 	};
 	// =========================================================================

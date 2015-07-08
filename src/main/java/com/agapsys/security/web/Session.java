@@ -24,11 +24,10 @@ import javax.servlet.http.HttpSession;
 /** Session utilities */
 public class Session {
 	// CLASS SCOPE =============================================================
-	static final String XSRF_HEADER            = "X-Csrf-Token";
-	
-	private static final int    DEFAULT_XSRF_TOKEN_LENGTH      = 128;
-	private static final String SESSION_ATTR_USER       = "com.agapsys.security.web.user";
-	private static final String SESSION_ATTR_XSRF_TOKEN = "com.agapsys.security.web.xsrf";
+	private static final int   DEFAULT_CSRF_TOKEN_LENGTH      = 128;
+
+	public static final String SESSION_ATTR_USER       = "com.agapsys.security.web.user";
+	public static final String SESSION_ATTR_CSRF_TOKEN = "com.agapsys.security.web.csrf";
 	
 	/** 
 	 * @param request HTTP request
@@ -47,11 +46,11 @@ public class Session {
 	 * Sets an attribute into request session
 	 * @param request HTTP request
 	 * @param name attribute name
-	 * @param value attribute value
+	 * @param obj attribute value
 	 */
-	public static void setSessionAttribute(HttpServletRequest request, String name, String value) {
+	public static void setSessionAttribute(HttpServletRequest request, String name, Object obj) {
 		HttpSession session = request.getSession();
-		session.setAttribute(name, value);
+		session.setAttribute(name, obj);
 	}
 	
 	/** 
@@ -75,12 +74,12 @@ public class Session {
 	}
 	
 	/**
-	 * Assigns a user to request session
+	 * Assigns a user to request session and returns associated CSRF token
 	 * @param request HTTP request
 	 * @param response
 	 * @param user 
 	 */
-	public static void setSessionUser(HttpServletRequest request, HttpServletResponse response, User user) {
+	public static void registerSessionUser(HttpServletRequest request, HttpServletResponse response, User user) {
 		if (request == null)
 			throw new IllegalArgumentException("Null request");
 
@@ -88,21 +87,27 @@ public class Session {
 			throw new IllegalArgumentException("Null user");
 
 		// Registers user in session...
-		HttpSession session = request.getSession();
-		session.setAttribute(SESSION_ATTR_USER, user);
-		
-		// Assigns a XSRF token for this user
-		String xsrfToken = Util.getRandomString(DEFAULT_XSRF_TOKEN_LENGTH);
-		session.setAttribute(SESSION_ATTR_XSRF_TOKEN, xsrfToken);
-		response.setHeader(XSRF_HEADER, xsrfToken);
+		setSessionAttribute(request, SESSION_ATTR_USER, user);
 	}
 	
 	/**
-	 * @return XSRF (Cross-Site Request Forgery) token associated to request session
+	 * @return CSRF (Cross-Site Request Forgery) token associated to request session
 	 * @param request HTTP request
 	 */
-	protected static String getSessionXsrfToken(HttpServletRequest request) {
-		return (String) getSessionAttribute(request, SESSION_ATTR_XSRF_TOKEN);
+	public static String getSessionCsrfToken(HttpServletRequest request) {
+		return (String) getSessionAttribute(request, SESSION_ATTR_CSRF_TOKEN);
+	}
+	
+	/**
+	 * Generates a CSRF token and assigns it to request session.
+	 * @param request HTTP request
+	 * @return generated token
+	 */
+	public static String generateSessionCsrfToken(HttpServletRequest request) {
+		// Assigns a CSRF token for this user
+		String csrfToken = Util.getRandomString(DEFAULT_CSRF_TOKEN_LENGTH);
+		setSessionAttribute(request, SESSION_ATTR_CSRF_TOKEN, csrfToken);
+		return csrfToken;
 	}
 	// =========================================================================
 

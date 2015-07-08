@@ -36,7 +36,7 @@ public abstract class AbstractActionServlet extends HttpServlet {
 	 * 
 	 * @param req servlet request
 	 * @param resp servlet response
-	 * @return paramters to be passed to action returned by {@linkplain AbstractActionServlet#getAction(HttpServletRequest, HttpServletResponse)}. Default implementation returns an empty array
+	 * @return parameters to be passed to action returned by {@linkplain AbstractActionServlet#getAction(HttpServletRequest, HttpServletResponse)}. Default implementation returns an empty array
 	 */
 	protected Object[] getActionParameters(HttpServletRequest req, HttpServletResponse resp) {
 		return new Object[0];

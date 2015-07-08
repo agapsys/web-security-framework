@@ -17,6 +17,7 @@
 package com.agapsys.security.web;
 
 import java.util.Random;
+import javax.servlet.http.HttpServletRequest;
 
 /** General utilities */
 class Util {
@@ -55,6 +56,13 @@ class Util {
 		return sb.toString();
 	}
 	
+	/** 
+	 * @return HttpMethod used by given request
+	 * @param request HTTP request
+	 */
+	public static HttpMethod getMethod(HttpServletRequest request) {
+		return HttpMethod.fromString(request.getMethod());
+	}
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================

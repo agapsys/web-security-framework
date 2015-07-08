@@ -24,10 +24,8 @@ import com.agapsys.security.RoleRepository;
 import com.agapsys.security.User;
 import com.agapsys.security.SecurityException;
 import java.util.Objects;
-import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 public abstract class AbstractWebAction extends AbstractAction {
 	// CLASS SCOPE =============================================================
@@ -39,116 +37,20 @@ public abstract class AbstractWebAction extends AbstractAction {
 		public InternalMethodNotAllowedException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {}
 	}
 	
-	private static final int   DEFAULT_XSRF_TOKEN_LENGTH      = 128;
-	
-	public static final String XSRF_HEADER            = "X-Csrf-Token";
-	public static final String SESSION_ATTR_USER       = "com.agapsys.security.web.user";
-	public static final String SESSION_ATTR_XSRF_TOKEN = "com.agapsys.security.web.xsrf";
-	
-	/** 
-	 * Generates a random string (chars: [a-z][A-Z][0-9]).
-	 * @param length length of returned string
-	 * @return a random string with given length.
-	 * @throws IllegalArgumentException if (length &lt; 1)
-	 */
-	private static String getRandomString(int length) throws IllegalArgumentException {
-		char[] chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-		return getRandomString(length, chars);
-	}
-	
-	/**
-	 * Generates a random String 
-	 * @param length length of returned string
-	 * @param chars set of chars which will be using during random string generation
-	 * @return a random string with given length.
-	 * @throws IllegalArgumentException if (length &lt; 1 || chars == null || chars.length == 0)
-	 */
-	private static String getRandomString(int length, char[] chars) throws IllegalArgumentException {
-		if (length < 1)
-			throw new IllegalArgumentException("Invalid length: " + length);
-		
-		if (chars == null || chars.length == 0)
-			throw new IllegalArgumentException("Null/Empty chars");
-		
-		StringBuilder sb = new StringBuilder();
-		Random random = new Random();
-		for (int i = 0; i < length; i++) {
-			char c = chars[random.nextInt(chars.length)];
-			sb.append(c);
-		}
-		return sb.toString();
-	}
-	
-	/** 
-	 * @param request HTTP request
-	 * @param attributeName desired attribute.
-	 * @return An attribute from request session. If there is such attribute, returns null
-	 */
-	protected static Object getSessionAttribute(HttpServletRequest request, String attributeName) {
-		if (request == null)
-			throw new IllegalArgumentException("Null request");
-
-		HttpSession session = request.getSession();
-		return session.getAttribute(attributeName);
-	}
-	
-	/**
-	 * Sets an attribute into request session
-	 * @param request HTTP request
-	 * @param name attribute name
-	 * @param value attribute value
-	 */
-	protected static void setSessionAttribute(HttpServletRequest request, String name, String value) {
-		HttpSession session = request.getSession();
-		session.setAttribute(name, value);
-	}
-	
-	/** 
-	 * Invalidates request session.
-	 * @param request HTTP request
-	 */
-	protected static void invalidateSession(HttpServletRequest request) {
-		if (request == null)
-			throw new IllegalArgumentException("Null request");
-
-		request.getSession().invalidate();
-	}
-
-	/**
-	 * @param request HTTP request
-	 * @return Associated user registered into request session. If there is no registered user, returns null instead.
-	 */
-	protected static User getSessionUser(HttpServletRequest request) {
-		return (User) getSessionAttribute(request, SESSION_ATTR_USER);
-	}
-	
-	/**
-	 * @return XSRF (Cross-Site Request Forgery) token associated to request session
-	 * @param request HTTP request
-	 */
-	protected static String getSessionXsrfToken(HttpServletRequest request) {
-		return (String) getSessionAttribute(request, SESSION_ATTR_XSRF_TOKEN);
-	}
-	
-	/** 
-	 * @return HttpMethod used by given request
-	 * @param request HTTP request
-	 */
-	protected static HttpMethod getMethod(HttpServletRequest request) {
-		return HttpMethod.fromString(request.getMethod());
-	}
+	public static final String CSRF_HEADER  = "X-Csrf-Token";
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
-	private HttpMethod acceptedMethod = null;
+	private HttpMethod requiredMethod = null;
 	
 	private void setMethod(HttpMethod method) throws IllegalArgumentException {
 		if (method == null)
 			throw new IllegalArgumentException("Null method");
 		
-		this.acceptedMethod = method;
+		this.requiredMethod = method;
 	}
 	
+	// Constructors ------------------------------------------------------------	
 	/** Creates an action with public access and accepts any HTTP method. */
 	public AbstractWebAction() {
 		super();
@@ -156,12 +58,12 @@ public abstract class AbstractWebAction extends AbstractAction {
 	
 	/** 
 	 * Creates an action that accepts only given HTTP method.
-	 * @param acceptedMethod accepted HTTP method
+	 * @param requiredMethod accepted HTTP method
 	 * @throws IllegalArgumentException if acceptedMethod == null
 	 */
-	public AbstractWebAction(HttpMethod acceptedMethod) throws IllegalArgumentException {
+	public AbstractWebAction(HttpMethod requiredMethod) throws IllegalArgumentException {
 		super();
-		setMethod(acceptedMethod);
+		setMethod(requiredMethod);
 	}
 
 	/**
@@ -177,13 +79,13 @@ public abstract class AbstractWebAction extends AbstractAction {
 	/**
 	 * Creates an action the are restricted to users with given roles and accepts only given HTTP method
 	 * @param requiredRoles required roles for execution.
-	 * @param acceptedMethod accepted HTTP method
+	 * @param requiredMethod accepted HTTP method
 	 * @throws IllegalArgumentException if any of given roles is null
 	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
 	 */
-	public AbstractWebAction(HttpMethod acceptedMethod, Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
+	public AbstractWebAction(HttpMethod requiredMethod, Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
-		setMethod(acceptedMethod);
+		setMethod(requiredMethod);
 	}
 	
 	
@@ -201,15 +103,64 @@ public abstract class AbstractWebAction extends AbstractAction {
 	/**
 	 * Creates an action the are restricted to users with given roles and accepts only given HTTP method
 	 * @param requiredRoleNames required roles for execution.
-	 * @param acceptedMethod accepted HTTP method
+	 * @param requiredMethod accepted HTTP method
 	 * @throws IllegalArgumentException if any of given roles is null
 	 * @throws RoleNotFoundException if any of given roleNames is not registered in {@linkplain RoleRepository}
 	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
 	 */
-	public AbstractWebAction(HttpMethod acceptedMethod, String...requiredRoleNames) throws IllegalArgumentException, DuplicateException, RoleNotFoundException{
+	public AbstractWebAction(HttpMethod requiredMethod, String...requiredRoleNames) throws IllegalArgumentException, DuplicateException, RoleNotFoundException{
 		super(requiredRoleNames);
-		setMethod(acceptedMethod);
+		setMethod(requiredMethod);
 	}
+	// -------------------------------------------------------------------------
+	
+	/**
+	 * @param request HTTP request
+	 * @return The user associated to given request.
+	 * Default implementation returns {@linkplain Session#getSessionUser(HttpServletRequest)}.
+	 */
+	protected User getUser(HttpServletRequest request) {
+		return Session.getSessionUser(request);
+	}
+	
+	/**
+	 * Performs a CSRF test in given request
+	 * @param request HTTP request
+	 * @return a boolean indicating if test passed
+	 */
+	protected boolean passCsrfTest(HttpServletRequest request) {
+		String requestCsrfToken = request.getHeader(CSRF_HEADER);
+		String sessionCsrfToken = Session.getSessionCsrfToken(request);
+
+		return (getRequiredRoles().isEmpty() || Objects.equals(requestCsrfToken, sessionCsrfToken));
+	}
+	
+	/** 
+	 * Sends CSRF token to user.
+	 * Default implementation send it as a header ({@link AbstractWebAction#CSRF_HEADER})
+	 * @param request HTTP request
+	 * @param response HTTP response
+	 * @param csrfToken token to be sent
+	 */
+	protected void sendCsrfToken(HttpServletRequest request, HttpServletResponse response, String csrfToken) {
+		response.setHeader(CSRF_HEADER, csrfToken);
+	}
+	
+	/**
+	 * Registers an user in the session related to given request.
+	 * Default implementation registers a user in the session using {@linkplain Session#registerSessionUser(HttpServletRequest, HttpServletResponse, User)},
+	 * registers a CSRF token in the session using {@link Session#generateSessionCsrfToken(HttpServletRequest)} and
+	 * sends it via {@link AbstractWebAction#sendCsrfToken(HttpServletRequest, HttpServletResponse, String)}.
+	 * @param request HTTP request
+	 * @param response HTTP response
+	 * @param user user to be registered
+	 */
+	protected void registerSessionUser(HttpServletRequest request, HttpServletResponse response, User user) {
+		Session.registerSessionUser(request, response, user);
+		String csrfToken = Session.generateSessionCsrfToken(request);
+		sendCsrfToken(request, response, csrfToken);
+	}
+	
 	
 	@Override
 	protected final void preRun(User user, Object...params) {
@@ -236,15 +187,12 @@ public abstract class AbstractWebAction extends AbstractAction {
 		
 		Object[] extraParams = params.length >= 2 ? (Object[])params[2] : new Object[0];
 		
-		HttpMethod reqMethod = getMethod(request);
-		if (acceptedMethod != null && acceptedMethod != reqMethod)
+		HttpMethod reqMethod = Util.getMethod(request);
+		if (requiredMethod != null && requiredMethod != reqMethod)
 			throw new InternalMethodNotAllowedException(request, response, params, "Method not allowed: " + reqMethod.name());
 		
-		String requestXsrfToken = request.getHeader(XSRF_HEADER);
-		String sessionXsrfToken = getSessionXsrfToken(request);
-
-		if (!Objects.equals(requestXsrfToken, sessionXsrfToken) && !getRequiredRoles().isEmpty()) {
-			throw new InternalWebSecurityException(request, response, params, "Invalid XSRF token");
+		if (!passCsrfTest(request)){
+			throw new InternalWebSecurityException(request, response, params, "Invalid CSRF token");
 		} else  {
 			preRun(request, response, extraParams);
 		}
@@ -270,38 +218,17 @@ public abstract class AbstractWebAction extends AbstractAction {
 	protected void postRun(HttpServletRequest request, HttpServletResponse response, Object...params) {}
 
 	
-	public HttpMethod getAcceptedMethod() {
-		return acceptedMethod;
+	public HttpMethod getRequiredMethod() {
+		return requiredMethod;
 	}
 	
-	public void setAcceptedMethod(HttpMethod method) throws IllegalArgumentException {
-		setMethod(method);
+	public void setRequiredMethod(HttpMethod requiredMethod) throws IllegalArgumentException {
+		setMethod(requiredMethod);
 	}
-	
-	protected int getXsrfTokenLength() {
-		return DEFAULT_XSRF_TOKEN_LENGTH;
-	}
-	
-	protected void registerSessionUser(HttpServletRequest request, HttpServletResponse response, User user) {
-		if (request == null)
-			throw new IllegalArgumentException("Null request");
 
-		if (user == null)
-			throw new IllegalArgumentException("Null user");
-
-		// Registers user in session...
-		HttpSession session = request.getSession();
-		session.setAttribute(SESSION_ATTR_USER, user);
-		
-		// Assigns a XSRF token for this user
-		String xsrfToken = getRandomString(getXsrfTokenLength());
-		session.setAttribute(SESSION_ATTR_XSRF_TOKEN, xsrfToken);
-		response.setHeader(XSRF_HEADER, xsrfToken);
-	}
 	
-
 	public final void execute(HttpServletRequest request, HttpServletResponse response, Object...params) throws MethodNotAllowedException, WebSecurityException  {
-		User user = getSessionUser(request);
+		User user = getUser(request);
 		try {
 			super.execute(user, request, response, params);
 		} catch (InternalMethodNotAllowedException ex) {

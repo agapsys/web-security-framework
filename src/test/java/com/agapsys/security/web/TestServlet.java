@@ -48,7 +48,7 @@ public class TestServlet extends AbstractActionServlet {
 		
 		@Override
 		protected void run(HttpServletRequest request, HttpServletResponse response, Object... params) {
-			TestUser connectedUser = (TestUser) getSessionUser(request);
+			TestUser connectedUser = (TestUser) Session.getSessionUser(request);
 			
 			try {
 				response.getWriter().print(String.format("Hi %s", connectedUser != null ? connectedUser.getUsername() : "<anonymous>"));

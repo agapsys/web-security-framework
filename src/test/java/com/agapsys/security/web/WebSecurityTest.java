@@ -90,11 +90,10 @@ public class WebSecurityTest {
 		
 		HttpResponse response = sc.doPost(post);
 		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
-		assertTrue(response.containsHeader(AbstractWebAction.XSRF_HEADER));
-		HttpHeader xsrfHeader = response.getFirstHeader(AbstractWebAction.XSRF_HEADER);
+		assertTrue(response.containsHeader(AbstractWebAction.CSRF_HEADER));
+		HttpHeader csrfHeader = response.getFirstHeader(AbstractWebAction.CSRF_HEADER);
 		
-		System.out.println("XSRF token: " + xsrfHeader.getValue());
-		assertEquals(AuthServlet.XSRF_TOKEN_LENGTH, xsrfHeader.getValue().length());
+		System.out.println("CSRF token: " + csrfHeader.getValue());
 	}
 	
 	@Test
@@ -139,17 +138,17 @@ public class WebSecurityTest {
 	}
 	
 	@Test
-	public void accessingRestrictedUrlLoggedInButWithXsrfToken() {
+	public void accessingRestrictedUrlLoggedInButWithCsrfToken() {
 		HttpClient client = new HttpClient();
 		
 		HttpPost post = new HttpPost(sc, AuthServlet.URL_LOGIN);
 		post.addParameter(AuthServlet.PARAM_USERNAME, "foo");
 		post.addParameter(AuthServlet.PARAM_PASSOWRD, "foo-password");
 		HttpResponse response = sc.doPost(client, post);
-		HttpHeader xsrfTokenHeader = response.getFirstHeader(AbstractWebAction.XSRF_HEADER);
+		HttpHeader csrfTokenHeader = response.getFirstHeader(AbstractWebAction.CSRF_HEADER);
 		
 		HttpGet getRequest = new HttpGet(sc, TestServlet.URL_SECURED);
-		getRequest.addHeaders(xsrfTokenHeader);
+		getRequest.addHeaders(csrfTokenHeader);
 		response = sc.doGet(client, getRequest);
 		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
 		
@@ -162,7 +161,7 @@ public class WebSecurityTest {
 		
 		// Trying accessing again
 		getRequest = new HttpGet(sc, TestServlet.URL_SECURED);
-		getRequest.addHeaders(xsrfTokenHeader);
+		getRequest.addHeaders(csrfTokenHeader);
 		response = sc.doGet(client, getRequest);
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());
 	}
@@ -174,17 +173,17 @@ public class WebSecurityTest {
 		post.addParameter(AuthServlet.PARAM_USERNAME, "foo1");
 		post.addParameter(AuthServlet.PARAM_PASSOWRD, "foo-password1");
 		HttpResponse response = sc.doPost(fullPrivilegesClient, post);
-		HttpHeader fullPrivilegesXsrfToken = response.getFirstHeader(AbstractWebAction.XSRF_HEADER);
+		HttpHeader fullPrivilegesCsrfToken = response.getFirstHeader(AbstractWebAction.CSRF_HEADER);
 		HttpGet fullPrivilegesGet = new HttpGet(sc, TestServlet.URL_EXTRA_SECURED);
-		fullPrivilegesGet.addHeaders(fullPrivilegesXsrfToken);
+		fullPrivilegesGet.addHeaders(fullPrivilegesCsrfToken);
 		
 		HttpClient insufficientPrivilegesClient = new HttpClient();
 		post = new HttpPost(sc, AuthServlet.URL_LOGIN);
 		post.addParameter(AuthServlet.PARAM_USERNAME, "foo");
 		post.addParameter(AuthServlet.PARAM_PASSOWRD, "foo-password");
-		HttpHeader insufficientPrivilegesXsrfToken = response.getFirstHeader(AbstractWebAction.XSRF_HEADER);
+		HttpHeader insufficientPrivilegesCsrfToken = response.getFirstHeader(AbstractWebAction.CSRF_HEADER);
 		HttpGet insufficientPrivilegesGet = new HttpGet(sc, TestServlet.URL_EXTRA_SECURED);
-		insufficientPrivilegesGet.addHeaders(insufficientPrivilegesXsrfToken);
+		insufficientPrivilegesGet.addHeaders(insufficientPrivilegesCsrfToken);
 		
 		response = sc.doGet(fullPrivilegesClient, fullPrivilegesGet);
 		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
