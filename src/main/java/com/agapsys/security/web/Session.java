@@ -18,7 +18,6 @@ package com.agapsys.security.web;
 
 import com.agapsys.security.User;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /** Session utilities */
@@ -33,11 +32,15 @@ public class Session {
 	 * @param request HTTP request
 	 * @param attributeName desired attribute.
 	 * @return An attribute from request session. If there is such attribute, returns null
+	 * @throws IllegalArgumentException if request == null or (attributeName == null || attributeName.isEmpty())
 	 */
-	public static Object getSessionAttribute(HttpServletRequest request, String attributeName) {
+	public static Object getSessionAttribute(HttpServletRequest request, String attributeName) throws IllegalArgumentException {
 		if (request == null)
 			throw new IllegalArgumentException("Null request");
 
+		if (attributeName == null || attributeName.isEmpty())
+			throw new IllegalArgumentException("Null/Empty attributeName");
+		
 		HttpSession session = request.getSession();
 		return session.getAttribute(attributeName);
 	}
@@ -45,19 +48,44 @@ public class Session {
 	/**
 	 * Sets an attribute into request session
 	 * @param request HTTP request
-	 * @param name attribute name
+	 * @param attributeName attribute name
 	 * @param obj attribute value
+	 * @throws IllegalArgumentException if request == null or (attributeName == null || attributeName.isEmpty())
 	 */
-	public static void setSessionAttribute(HttpServletRequest request, String name, Object obj) {
+	public static void setSessionAttribute(HttpServletRequest request, String attributeName, Object obj) throws IllegalArgumentException {
+		if (request == null)
+			throw new IllegalArgumentException("Null request");
+		
+		if (attributeName == null || attributeName.isEmpty())
+			throw new IllegalArgumentException("Null/Empty attributeName");
+		
 		HttpSession session = request.getSession();
-		session.setAttribute(name, obj);
+		session.setAttribute(attributeName, obj);
+	}
+	
+	/**
+	 * Remove a session attribute
+	 * @param request HTTP request
+	 * @param attributeName attribute name
+	 * @throws IllegalArgumentException if request == null or (attributeName == null || attributeName.isEmpty())
+	 */
+	public static void removeSessionAttribute(HttpServletRequest request, String attributeName) throws IllegalArgumentException {
+		if (request == null)
+			throw new IllegalArgumentException("Null request");
+		
+		if (attributeName == null || attributeName.isEmpty())
+			throw new IllegalArgumentException("Null/Empty attributeName");
+		
+		HttpSession session = request.getSession();
+		session.removeAttribute(attributeName);
 	}
 	
 	/** 
 	 * Invalidates request session.
 	 * @param request HTTP request
+	 * @throws IllegalArgumentException if request == null
 	 */
-	public static void invalidateSession(HttpServletRequest request) {
+	public static void invalidateSession(HttpServletRequest request) throws IllegalArgumentException {
 		if (request == null)
 			throw new IllegalArgumentException("Null request");
 
@@ -68,18 +96,22 @@ public class Session {
 	/**
 	 * @param request HTTP request
 	 * @return Associated user registered into request session. If there is no registered user, returns null instead.
+	 * @throws IllegalArgumentException if request == null
 	 */
-	public static User getSessionUser(HttpServletRequest request) {
+	public static User getSessionUser(HttpServletRequest request) throws IllegalArgumentException {
+		if (request == null)
+			throw new IllegalArgumentException("Null request");
+		
 		return (User) getSessionAttribute(request, SESSION_ATTR_USER);
 	}
 	
 	/**
 	 * Assigns a user to request session and returns associated CSRF token
 	 * @param request HTTP request
-	 * @param response
-	 * @param user 
+	 * @param user user to be registered
+	 * @throws IllegalArgumentException if request == null or user == null
 	 */
-	public static void registerSessionUser(HttpServletRequest request, HttpServletResponse response, User user) {
+	public static void registerSessionUser(HttpServletRequest request, User user) throws IllegalArgumentException {
 		if (request == null)
 			throw new IllegalArgumentException("Null request");
 
@@ -93,8 +125,9 @@ public class Session {
 	/**
 	 * @return CSRF (Cross-Site Request Forgery) token associated to request session
 	 * @param request HTTP request
+	 * @throws IllegalArgumentException if request == null
 	 */
-	public static String getSessionCsrfToken(HttpServletRequest request) {
+	public static String getSessionCsrfToken(HttpServletRequest request) throws IllegalArgumentException {
 		return (String) getSessionAttribute(request, SESSION_ATTR_CSRF_TOKEN);
 	}
 	
@@ -102,8 +135,9 @@ public class Session {
 	 * Generates a CSRF token and assigns it to request session.
 	 * @param request HTTP request
 	 * @return generated token
+	 * @throws IllegalArgumentException if request == null
 	 */
-	public static String generateSessionCsrfToken(HttpServletRequest request) {
+	public static String generateSessionCsrfToken(HttpServletRequest request) throws IllegalArgumentException{
 		// Assigns a CSRF token for this user
 		String csrfToken = Util.getRandomString(DEFAULT_CSRF_TOKEN_LENGTH);
 		setSessionAttribute(request, SESSION_ATTR_CSRF_TOKEN, csrfToken);

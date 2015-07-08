@@ -156,7 +156,7 @@ public abstract class AbstractWebAction extends AbstractAction {
 	 * @param user user to be registered
 	 */
 	protected void registerSessionUser(HttpServletRequest request, HttpServletResponse response, User user) {
-		Session.registerSessionUser(request, response, user);
+		Session.registerSessionUser(request, user);
 		String csrfToken = Session.generateSessionCsrfToken(request);
 		sendCsrfToken(request, response, csrfToken);
 	}
