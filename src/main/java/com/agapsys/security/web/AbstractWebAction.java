@@ -148,7 +148,7 @@ public abstract class AbstractWebAction extends AbstractAction {
 	
 	/**
 	 * Registers an user in the session related to given request.
-	 * Default implementation registers a user in the session using {@linkplain Session#registerSessionUser(HttpServletRequest, HttpServletResponse, User)},
+	 * Default implementation registers a user in the session using {@linkplain Session#registerSessionUser(javax.servlet.http.HttpServletRequest, com.agapsys.security.User)},
 	 * registers a CSRF token in the session using {@link Session#generateSessionCsrfToken(HttpServletRequest)} and
 	 * sends it via {@link AbstractWebAction#sendCsrfToken(HttpServletRequest, HttpServletResponse, String)}.
 	 * @param request HTTP request
