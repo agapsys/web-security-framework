@@ -200,7 +200,7 @@ public class WebSecurityTest {
 	
 	@Test
 	public void testServletShutdown() {
-		HttpServlet.setActive(false);
+		Application.setActive(false);
 		
 		HttpResponse response = sc.doGet(
 			String.format(

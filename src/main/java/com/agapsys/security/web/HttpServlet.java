@@ -24,25 +24,12 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Base servlet for web applications.
  * The main difference between this class and {@linkplain javax.servlet.http.HttpServlet}
- * is the fact that is possible to shutdown all application servlets which
- * inherits from this class via {@linkplain HttpServlet#setActive(boolean)}
+ * is the fact that is possible to disable the servlet via
+ * {@linkplain HttpServlet#setActive(boolean)}
  * 
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class HttpServlet extends javax.servlet.http.HttpServlet {
-	// CLASS SCOPE =============================================================
-	private static volatile boolean active = true;
-	
-	public static boolean isActive() {
-		return active;
-	}
-	
-	public static void setActive(boolean active) {
-		HttpServlet.active = active;
-	}
-	// =========================================================================
-
-	// INSTANCE SCOPE ==========================================================
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (isActive()) {
@@ -52,10 +39,19 @@ public class HttpServlet extends javax.servlet.http.HttpServlet {
 		}
 	}
 	
+	/** 
+	 * Process request. 
+	 * The request will be processed only if {@linkplain HttpServlet#isActive()} returns true.
+	 */
 	protected void doService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		super.service(req, resp);
 	}
-	// =========================================================================
-
 	
+	/** 
+	 * Returns the activity state of this servlet.
+	 * @return Default implementation returns always true
+	 */
+	protected boolean isActive() {
+		return true;
+	}
 }
