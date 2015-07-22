@@ -20,6 +20,7 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -42,7 +43,7 @@ public abstract class AbstractActionServlet extends HttpServlet {
 	}
 	
 	@Override
-	protected final void doService(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		try {
 			AbstractWebAction action = getAction(req, resp);
 			

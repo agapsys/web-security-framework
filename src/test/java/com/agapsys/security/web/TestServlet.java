@@ -143,10 +143,5 @@ public class TestServlet extends AbstractActionServlet {
 				throw new RuntimeException("Invalid url: " + servletPath);
 		}
 	}
-	
-	@Override
-	protected boolean isActive() {
-		return Application.isActive();
-	}
 	// =========================================================================
 }

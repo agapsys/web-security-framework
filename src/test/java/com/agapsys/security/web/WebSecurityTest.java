@@ -197,29 +197,4 @@ public class WebSecurityTest {
 		response = sc.doGet(fullPrivilegesClient, fullPrivilegesGet);
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());
 	}
-	
-	@Test
-	public void testServletShutdown() {
-		Application.setActive(false);
-		
-		HttpResponse response = sc.doGet(
-			String.format(
-				"%s?%s=%s&%s=%s", 
-				AuthServlet.URL_LOGIN, 
-				AuthServlet.PARAM_USERNAME,
-				"foo", 
-				AuthServlet.PARAM_PASSOWRD,
-				"foo-password"
-			)
-		);
-		assertEquals(HttpServletResponse.SC_SERVICE_UNAVAILABLE, response.getStatusCode());
-		
-		
-		HttpPost post = new HttpPost(sc, AuthServlet.URL_LOGIN);
-		post.addParameter(AuthServlet.PARAM_USERNAME, "foo");
-		post.addParameter(AuthServlet.PARAM_PASSOWRD, "bar");
-		
-		response = sc.doPost(post);
-		assertEquals(HttpServletResponse.SC_SERVICE_UNAVAILABLE, response.getStatusCode());
-	}
 }

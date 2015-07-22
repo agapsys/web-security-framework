@@ -77,11 +77,6 @@ public class AuthServlet extends AbstractActionServlet {
 				throw new UnsupportedOperationException("Unsupported servletPath: " + servletPath);
 		}
 	}
-	
-	@Override
-	protected boolean isActive() {
-		return Application.isActive();
-	}
 	// =========================================================================
 
 }
