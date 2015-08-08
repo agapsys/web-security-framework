@@ -23,6 +23,7 @@ import com.agapsys.security.RoleNotFoundException;
 import com.agapsys.security.RoleRepository;
 import com.agapsys.security.User;
 import com.agapsys.security.SecurityException;
+import java.io.IOException;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -227,7 +228,7 @@ public abstract class AbstractWebAction extends AbstractAction {
 	}
 
 	
-	public final void execute(HttpServletRequest request, HttpServletResponse response, Object...params) throws MethodNotAllowedException, WebSecurityException  {
+	public final void execute(HttpServletRequest request, HttpServletResponse response, Object...params) throws MethodNotAllowedException, WebSecurityException, IOException {
 		User user = getUser(request);
 		try {
 			super.execute(user, request, response, params);
