@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agapsys.security.web;
+package com.agapsys.security.web.integration;
 
-import com.agapsys.sevlet.test.AppContext;
+import com.agapsys.security.web.AbstractWebAction;
+import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.HttpClient;
 import com.agapsys.sevlet.test.HttpGet;
 import com.agapsys.sevlet.test.HttpPost;
 import com.agapsys.sevlet.test.HttpRequest.HttpHeader;
 import com.agapsys.sevlet.test.HttpResponse;
-import com.agapsys.sevlet.test.ServletContainter;
+import com.agapsys.sevlet.test.ServletContainer;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
 import org.junit.Test;
@@ -33,19 +34,18 @@ public class WebSecurityTest {
 	// CLASS SCOPE =============================================================
 	@BeforeClass
 	public static void beforeClass() {
-		TestUser.addUser("foo", "foo-password", TestDefs.SECURED_ROLE);
-		TestUser.addUser("foo1", "foo-password1", TestDefs.EXTRA_SECURED_ROLE);
+		User.addUser("foo",  "foo-password",  Defs.SECURED_ROLE);
+		User.addUser("foo1", "foo-password1", Defs.EXTRA_SECURED_ROLE);
 	}
 	// =========================================================================
-	private ServletContainter sc;
+	private ServletContainer sc;
 
 	@Before
 	public void setUp() {
-		sc = new ServletContainter();
+		sc = new ServletContainer();
 		
-		AppContext context = new AppContext();
-		context.registerServlet(TestServlet.class);
-		context.registerServlet(AuthServlet.class);
+		ApplicationContext context = new ApplicationContext();
+		context.registerServlet(DispatcherServlet.class);
 		
 		sc.registerContext(context, "/");
 		sc.startServer();
@@ -57,26 +57,26 @@ public class WebSecurityTest {
 	}
 	
 	@Test
-	public void unsupportedMethod() {
+	public void actionNotFound() {
 		HttpResponse response = sc.doGet(
 			String.format(
 				"%s?%s=%s&%s=%s", 
-				AuthServlet.URL_LOGIN, 
-				AuthServlet.PARAM_USERNAME,
+				DispatcherServlet.URL_LOGIN, 
+				LoginAction.PARAM_USERNAME,
 				"foo", 
-				AuthServlet.PARAM_PASSOWRD,
+				LoginAction.PARAM_PASSOWRD,
 				"foo-password"
 			)
 		);
 		
-		assertEquals(HttpServletResponse.SC_METHOD_NOT_ALLOWED, response.getStatusCode());
+		assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusCode());
 	}
 	
 	@Test
 	public void invalidCrendentials() {
-		HttpPost post = new HttpPost(sc, AuthServlet.URL_LOGIN);
-		post.addParameter(AuthServlet.PARAM_USERNAME, "foo");
-		post.addParameter(AuthServlet.PARAM_PASSOWRD, "bar");
+		HttpPost post = new HttpPost(sc, DispatcherServlet.URL_LOGIN);
+		post.addParameter(LoginAction.PARAM_USERNAME, "foo");
+		post.addParameter(LoginAction.PARAM_PASSOWRD, "bar");
 		
 		HttpResponse response = sc.doPost(post);
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());
@@ -84,9 +84,9 @@ public class WebSecurityTest {
 	
 	@Test
 	public void validCredentials() {
-		HttpPost post = new HttpPost(sc, AuthServlet.URL_LOGIN);
-		post.addParameter(AuthServlet.PARAM_USERNAME, "foo");
-		post.addParameter(AuthServlet.PARAM_PASSOWRD, "foo-password");
+		HttpPost post = new HttpPost(sc, DispatcherServlet.URL_LOGIN);
+		post.addParameter(LoginAction.PARAM_USERNAME, "foo");
+		post.addParameter(LoginAction.PARAM_PASSOWRD, "foo-password");
 		
 		HttpResponse response = sc.doPost(post);
 		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
@@ -98,69 +98,44 @@ public class WebSecurityTest {
 	
 	@Test
 	public void accessingPublicUrl() {
-		HttpResponse response = sc.doGet(TestServlet.URL_PUBLIC);
+		HttpResponse response = sc.doGet(DispatcherServlet.URL_PUBLIC);
 		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
 		assertEquals("Hi <anonymous>", response.getResponseBody());
 	}
 	
 	@Test
 	public void accessingRestrictedUrlAnonymously() {
-		HttpResponse response = sc.doGet(TestServlet.URL_SECURED);
+		HttpResponse response = sc.doGet(DispatcherServlet.URL_SECURED);
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());
 		
-		response = sc.doGet(TestServlet.URL_EXTRA_SECURED);
+		response = sc.doGet(DispatcherServlet.URL_EXTRA_SECURED);
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());
-	}
-	
-	@Test
-	public void accessingParamterAction() {
-		HttpResponse response = sc.doGet(
-			String.format(
-				"%s?%s=%s", 
-				TestServlet.URL_PARAM_ACTION,
-				TestServlet.PARAM_ACTION_TYPE,
-				TestServlet.PARAM_ACTION1_VALUE
-			)
-		);
-		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
-		assertEquals("action1", response.getResponseBody());
-		
-		response = sc.doGet(
-			String.format(
-				"%s?%s=%s", 
-				TestServlet.URL_PARAM_ACTION,
-				TestServlet.PARAM_ACTION_TYPE,
-				TestServlet.PARAM_ACTION2_VALUE
-			)
-		);
-		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
-		assertEquals("action2", response.getResponseBody());
 	}
 	
 	@Test
 	public void accessingRestrictedUrlLoggedInButWithCsrfToken() {
 		HttpClient client = new HttpClient();
 		
-		HttpPost post = new HttpPost(sc, AuthServlet.URL_LOGIN);
-		post.addParameter(AuthServlet.PARAM_USERNAME, "foo");
-		post.addParameter(AuthServlet.PARAM_PASSOWRD, "foo-password");
+		HttpPost post = new HttpPost(sc, DispatcherServlet.URL_LOGIN);
+		post.addParameter(LoginAction.PARAM_USERNAME, "foo");
+		post.addParameter(LoginAction.PARAM_PASSOWRD, "foo-password");
 		HttpResponse response = sc.doPost(client, post);
 		HttpHeader csrfTokenHeader = response.getFirstHeader(AbstractWebAction.CSRF_HEADER);
 		
-		HttpGet getRequest = new HttpGet(sc, TestServlet.URL_SECURED);
+		HttpGet getRequest = new HttpGet(sc, DispatcherServlet.URL_SECURED);
 		getRequest.addHeaders(csrfTokenHeader);
 		response = sc.doGet(client, getRequest);
 		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
 		
-		response = sc.doGet(client, TestServlet.URL_SECURED); // <-- here there is no CSRF token header
+		response = sc.doGet(client, DispatcherServlet.URL_SECURED); // <-- here there is no CSRF token header
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());
 		
 		// Logging out
-		response = sc.doGet(client, AuthServlet.URL_LOGOUT);
+		response = sc.doGet(client, DispatcherServlet.URL_LOGOUT);
 		assertEquals(HttpServletResponse.SC_OK, response.getStatusCode());
 		
 		// Trying accessing again
-		getRequest = new HttpGet(sc, TestServlet.URL_SECURED);
+		getRequest = new HttpGet(sc, DispatcherServlet.URL_SECURED);
 		getRequest.addHeaders(csrfTokenHeader);
 		response = sc.doGet(client, getRequest);
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());
@@ -169,20 +144,20 @@ public class WebSecurityTest {
 	@Test
 	public void accessingRestrictedUrlLoggedInButWithInsufficientPrivileges() {
 		HttpClient fullPrivilegesClient = new HttpClient();
-		HttpPost post = new HttpPost(sc, AuthServlet.URL_LOGIN);
-		post.addParameter(AuthServlet.PARAM_USERNAME, "foo1");
-		post.addParameter(AuthServlet.PARAM_PASSOWRD, "foo-password1");
+		HttpPost post = new HttpPost(sc, DispatcherServlet.URL_LOGIN);
+		post.addParameter(LoginAction.PARAM_USERNAME, "foo1");
+		post.addParameter(LoginAction.PARAM_PASSOWRD, "foo-password1");
 		HttpResponse response = sc.doPost(fullPrivilegesClient, post);
 		HttpHeader fullPrivilegesCsrfToken = response.getFirstHeader(AbstractWebAction.CSRF_HEADER);
-		HttpGet fullPrivilegesGet = new HttpGet(sc, TestServlet.URL_EXTRA_SECURED);
+		HttpGet fullPrivilegesGet = new HttpGet(sc, DispatcherServlet.URL_EXTRA_SECURED);
 		fullPrivilegesGet.addHeaders(fullPrivilegesCsrfToken);
 		
 		HttpClient insufficientPrivilegesClient = new HttpClient();
-		post = new HttpPost(sc, AuthServlet.URL_LOGIN);
-		post.addParameter(AuthServlet.PARAM_USERNAME, "foo");
-		post.addParameter(AuthServlet.PARAM_PASSOWRD, "foo-password");
+		post = new HttpPost(sc, DispatcherServlet.URL_LOGIN);
+		post.addParameter(LoginAction.PARAM_USERNAME, "foo");
+		post.addParameter(LoginAction.PARAM_PASSOWRD, "foo-password");
 		HttpHeader insufficientPrivilegesCsrfToken = response.getFirstHeader(AbstractWebAction.CSRF_HEADER);
-		HttpGet insufficientPrivilegesGet = new HttpGet(sc, TestServlet.URL_EXTRA_SECURED);
+		HttpGet insufficientPrivilegesGet = new HttpGet(sc, DispatcherServlet.URL_EXTRA_SECURED);
 		insufficientPrivilegesGet.addHeaders(insufficientPrivilegesCsrfToken);
 		
 		response = sc.doGet(fullPrivilegesClient, fullPrivilegesGet);
@@ -192,7 +167,7 @@ public class WebSecurityTest {
 		response = sc.doGet(insufficientPrivilegesClient, insufficientPrivilegesGet);
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());
 		
-		sc.doGet(fullPrivilegesClient, AuthServlet.URL_LOGOUT); // <-- logout client with full privileges
+		sc.doGet(fullPrivilegesClient, DispatcherServlet.URL_LOGOUT); // <-- logout client with full privileges
 		
 		response = sc.doGet(fullPrivilegesClient, fullPrivilegesGet);
 		assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusCode());

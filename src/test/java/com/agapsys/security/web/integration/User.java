@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.security.web;
+package com.agapsys.security.web.integration;
 
 import com.agapsys.security.AbstractUser;
 import com.agapsys.security.DuplicateException;
@@ -23,11 +23,11 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class TestUser extends AbstractUser implements Serializable {
+public class User extends AbstractUser implements Serializable {
 	// CLASS SCOPE =============================================================
-	private static final Map<String, TestUser> APP_USERS = new LinkedHashMap<>();
+	private static final Map<String, User> APP_USERS = new LinkedHashMap<>();
 	
-	public static TestUser addUser(String username, String password, Role... roles) throws IllegalArgumentException, DuplicateException {
+	public static User addUser(String username, String password, Role... roles) throws IllegalArgumentException, DuplicateException {
 		if (username == null || username.isEmpty())
 			throw new IllegalArgumentException("Null/Empty username");
 		
@@ -40,16 +40,16 @@ public class TestUser extends AbstractUser implements Serializable {
 		if (APP_USERS.containsKey(username))
 			throw new IllegalArgumentException(String.format("An user with the same username (%s) is already registered", username));
 		
-		TestUser user = new TestUser(username, password, roles);
+		User user = new User(username, password, roles);
 		APP_USERS.put(username, user);
 		return user;
 	}
 	
-	public static TestUser getUser(String username, String password) throws IllegalArgumentException {
+	public static User getUser(String username, String password) throws IllegalArgumentException {
 		if (username == null || username.isEmpty())
 			throw new IllegalArgumentException("Null/Empty username");
 		
-		TestUser user = APP_USERS.get(username);
+		User user = APP_USERS.get(username);
 		if (user != null) {
 			if (!user.password.equals(password)) {
 				user = null;
@@ -63,7 +63,7 @@ public class TestUser extends AbstractUser implements Serializable {
 	private final String password;
 	private final String username;
 	
-	private TestUser(String username, String password, Role... roles) throws IllegalArgumentException, DuplicateException {
+	private User(String username, String password, Role... roles) throws IllegalArgumentException, DuplicateException {
 		super(roles);
 		this.username = username;
 		this.password = password;

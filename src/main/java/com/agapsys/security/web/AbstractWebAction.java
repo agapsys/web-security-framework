@@ -34,64 +34,34 @@ public abstract class AbstractWebAction extends AbstractAction {
 		public InternalWebSecurityException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {}
 	}
 	
-	private static class InternalMethodNotAllowedException extends RuntimeException {
-		public InternalMethodNotAllowedException(HttpServletRequest request, HttpServletResponse response, Object[] params, String message) {}
+	private static class InternalIOException extends RuntimeException {
+		public InternalIOException(IOException cause) {
+			super(cause);
+		}
 	}
 	
 	public static final String CSRF_HEADER  = "X-Csrf-Token";
 	// =========================================================================
 	
-	// INSTANCE SCOPE ==========================================================
-	private HttpMethod requiredMethod = null;
-	
-	private void setMethod(HttpMethod method) throws IllegalArgumentException {
-		if (method == null)
-			throw new IllegalArgumentException("Null method");
-		
-		this.requiredMethod = method;
-	}
-	
+	// INSTANCE SCOPE ==========================================================	
 	// Constructors ------------------------------------------------------------	
-	/** Creates an action with public access and accepts any HTTP method. */
+	/** Creates an action with public access. */
 	public AbstractWebAction() {
 		super();
 	}
-	
-	/** 
-	 * Creates an action that accepts only given HTTP method.
-	 * @param requiredMethod accepted HTTP method
-	 * @throws IllegalArgumentException if acceptedMethod == null
-	 */
-	public AbstractWebAction(HttpMethod requiredMethod) throws IllegalArgumentException {
-		super();
-		setMethod(requiredMethod);
-	}
 
 	/**
-	 * Creates an action the are restricted to users with given roles (all HTTP methods are accepted)
+	 * Creates an action the are restricted to users with given roles
 	 * @param requiredRoles required roles for execution.
 	 * @throws IllegalArgumentException if any of given roles is null
 	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
 	 */
 	public AbstractWebAction(Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
 		super(requiredRoles);
-	}
+	}	
 	
 	/**
-	 * Creates an action the are restricted to users with given roles and accepts only given HTTP method
-	 * @param requiredRoles required roles for execution.
-	 * @param requiredMethod accepted HTTP method
-	 * @throws IllegalArgumentException if any of given roles is null
-	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
-	 */
-	public AbstractWebAction(HttpMethod requiredMethod, Role...requiredRoles) throws IllegalArgumentException, DuplicateException {
-		super(requiredRoles);
-		setMethod(requiredMethod);
-	}
-	
-	
-	/**
-	 * Creates an action the are restricted to users with given roles (all HTTP methods are accepted)
+	 * Creates an action the are restricted to users with given roles
 	 * @param requiredRoleNames required roles for execution.
 	 * @throws IllegalArgumentException if any of given roles is null
 	 * @throws RoleNotFoundException if any of given roleNames is not registered in {@linkplain RoleRepository}
@@ -99,19 +69,6 @@ public abstract class AbstractWebAction extends AbstractAction {
 	 */
 	public AbstractWebAction(String...requiredRoleNames) throws IllegalArgumentException, DuplicateException, RoleNotFoundException {
 		super(requiredRoleNames);
-	}
-	
-	/**
-	 * Creates an action the are restricted to users with given roles and accepts only given HTTP method
-	 * @param requiredRoleNames required roles for execution.
-	 * @param requiredMethod accepted HTTP method
-	 * @throws IllegalArgumentException if any of given roles is null
-	 * @throws RoleNotFoundException if any of given roleNames is not registered in {@linkplain RoleRepository}
-	 * @throws DuplicateException if there is an attempt to register the same role more than once (either directly of as a child of any associated role).
-	 */
-	public AbstractWebAction(HttpMethod requiredMethod, String...requiredRoleNames) throws IllegalArgumentException, DuplicateException, RoleNotFoundException{
-		super(requiredRoleNames);
-		setMethod(requiredMethod);
 	}
 	// -------------------------------------------------------------------------
 	
@@ -188,10 +145,6 @@ public abstract class AbstractWebAction extends AbstractAction {
 		
 		Object[] extraParams = params.length >= 2 ? (Object[])params[2] : new Object[0];
 		
-		HttpMethod reqMethod = Util.getMethod(request);
-		if (requiredMethod != null && requiredMethod != reqMethod)
-			throw new InternalMethodNotAllowedException(request, response, params, "Method not allowed: " + reqMethod.name());
-		
 		if (!passCsrfTest(request)){
 			throw new InternalWebSecurityException(request, response, params, "Invalid CSRF token");
 		} else  {
@@ -203,11 +156,21 @@ public abstract class AbstractWebAction extends AbstractAction {
 	
 	
 	@Override
-	protected final void run(User user, Object...params) {		
-		run((HttpServletRequest) params[0], (HttpServletResponse) params[1], (Object[]) params[2]);
+	protected final void run(User user, Object...params) {
+		HttpServletRequest  req  = (HttpServletRequest) params[0];
+		HttpServletResponse resp = (HttpServletResponse) params[1];
+		params = (Object[]) params[2];
+		
+		try {
+			run(req, resp, params);
+		} catch (WebSecurityException ex) {
+			throw new InternalWebSecurityException(req, resp, params, ex.getMessage());
+		} catch (IOException ex) {
+			throw new InternalIOException(ex);
+		}
 	}
 	
-	protected abstract void run(HttpServletRequest request, HttpServletResponse response, Object...params);
+	protected abstract void run(HttpServletRequest request, HttpServletResponse response, Object...params) throws WebSecurityException, IOException;
 
 	
 	@Override
@@ -217,25 +180,15 @@ public abstract class AbstractWebAction extends AbstractAction {
 	}
 
 	protected void postRun(HttpServletRequest request, HttpServletResponse response, Object...params) {}
-
-	
-	public HttpMethod getRequiredMethod() {
-		return requiredMethod;
-	}
-	
-	public void setRequiredMethod(HttpMethod requiredMethod) throws IllegalArgumentException {
-		setMethod(requiredMethod);
-	}
-
-	
-	public final void execute(HttpServletRequest request, HttpServletResponse response, Object...params) throws MethodNotAllowedException, WebSecurityException, IOException {
+		
+	public final void execute(HttpServletRequest request, HttpServletResponse response, Object...params) throws WebSecurityException, IOException {
 		User user = getUser(request);
 		try {
 			super.execute(user, request, response, params);
-		} catch (InternalMethodNotAllowedException ex) {
-			throw new MethodNotAllowedException(request, response, params, ex.getMessage());
 		} catch (SecurityException | InternalWebSecurityException ex) {
 			throw new WebSecurityException(request, response, params, ex.getMessage());
+		} catch (InternalIOException ex) {
+			throw (IOException) ex.getCause();
 		}
 	}
 	// =========================================================================

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.agapsys.security.web;
+package com.agapsys.security.web.integration;
 
 import com.agapsys.security.Role;
 import com.agapsys.security.RoleRepository;
 
-public class TestDefs {
+public class Defs {
 	// CLASS SCOPE =============================================================
 	public static final Role SECURED_ROLE;
 	public static final Role EXTRA_SECURED_ROLE;
@@ -33,6 +33,6 @@ public class TestDefs {
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
-	private TestDefs() {}
+	private Defs() {}
 	// =========================================================================
 }
