@@ -20,8 +20,6 @@ import com.agapsys.security.DuplicateException;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -73,7 +71,13 @@ public class ActionDispatcherServlet extends HttpServlet {
 	 * @param req HTTP request
 	 */
 	public static AbstractWebAction getAction(HttpServletRequest req) {
-		HttpMethod httpMethod = HttpMethod.valueOf(req.getMethod());
+		HttpMethod httpMethod;
+		try {
+			httpMethod = HttpMethod.valueOf(req.getMethod());
+		} catch (IllegalArgumentException ex) {
+			httpMethod = null;
+		}
+		
 		String path = req.getPathInfo();
 
 		Map<String, AbstractWebAction> map = ACTION_MAP.get(httpMethod);
