@@ -55,14 +55,6 @@ class Util {
 		}
 		return sb.toString();
 	}
-	
-	/** 
-	 * @return HttpMethod used by given request
-	 * @param request HTTP request
-	 */
-	public static HttpMethod getMethod(HttpServletRequest request) {
-		return HttpMethod.fromString(request.getMethod());
-	}
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================

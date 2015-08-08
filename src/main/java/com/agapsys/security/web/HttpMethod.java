@@ -23,29 +23,4 @@ public enum HttpMethod {
 	POST,
 	PUT,
 	TRACE;
-	
-	static HttpMethod fromString(String method) {
-		switch (method) {
-			case "GET":
-				return GET;
-				
-			case "HEAD":
-				return HEAD;
-				
-			case "OPTIONS":
-				return OPTIONS;
-				
-			case "POST":
-				return POST;
-				
-			case "PUT":
-				return PUT;
-				
-			case "TRACE":
-				return TRACE;
-				
-			default:
-				throw new IllegalArgumentException(String.format("Unsupported method: %s", method));
-		}
-	}
 }
