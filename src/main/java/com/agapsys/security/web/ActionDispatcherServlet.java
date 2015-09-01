@@ -21,17 +21,18 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@WebServlet("/*")
 public class ActionDispatcherServlet extends HttpServlet {
 	// CLASS SCOPE =============================================================
 	private static final Map<HttpMethod, Map<String, AbstractWebAction>> ACTION_MAP = new LinkedHashMap<>();
 
 	/**
 	 * Registers an action with given URL
-	 *
 	 * @param action action to be associated with given URL and HTTP method
 	 * @param httpMethod associated HTTP method
 	 * @param url URL associated with given action and HTTP method
