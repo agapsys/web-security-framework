@@ -18,6 +18,7 @@ Dependencies
 Web Security Framework requires Java 7 compatible runtime and
 depends on the following external libraries:
 
+* Java(TM) EE 7 Web Specification APIs
 * Agapsys Security Framework (available at
   https://github.com/agapsys/security-framework)
 
