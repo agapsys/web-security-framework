@@ -17,7 +17,6 @@
 package com.agapsys.security.web;
 
 import java.util.Random;
-import javax.servlet.http.HttpServletRequest;
 
 /** General utilities */
 class Util {
