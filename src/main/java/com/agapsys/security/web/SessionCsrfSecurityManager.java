@@ -87,7 +87,7 @@ public class SessionCsrfSecurityManager extends SessionSecurityManager {
 	public void setCurrentUser(User user) {
 		super.setCurrentUser(user);
 		
-		HttpSession session = getRequest().getSession();
+		HttpSession session = getRequest().getSession(true);
 		
 		String token = getRandomString(CSRF_TOKEN_LENGTH);
 		session.setAttribute(SESSION_ATTR_CSRF_TOKEN, token);

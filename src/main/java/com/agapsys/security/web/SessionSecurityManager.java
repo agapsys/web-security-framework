@@ -43,10 +43,6 @@ public class SessionSecurityManager extends WebSecurityManager {
 			throw new IllegalArgumentException("User cannot be null");
 		
 		HttpSession session = getRequest().getSession(true);
-		
-		if (session == null)
-			throw new RuntimeException("Could not create a session");
-		
 		session.setAttribute(SESSION_ATTR_USER, user);
 	}
 
