@@ -21,7 +21,7 @@ limitations under the License.
 	
     <groupId>com.agapsys.libs</groupId>
     <artifactId>web-security-frameworwk</artifactId>
-    <version>2.0.0-RC1</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 	
 	<properties>
@@ -31,7 +31,7 @@ limitations under the License.
     </properties>
 	
 	<name>Web Security Framework</name>
-	<description>Action-based security framework for servlet applications</description>
+	<description>Action-based security framework for web applications</description>
 	<url>https://github.com/agapsys/web-security-framework</url>
 	
 	<licenses>
@@ -65,7 +65,7 @@ limitations under the License.
 		<dependency>
             <groupId>com.agapsys.libs</groupId>
             <artifactId>servlet-testing-framework</artifactId>
-            <version>1.0.0-RC1</version>
+            <version>2.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
         <dependency>
@@ -79,7 +79,7 @@ limitations under the License.
         <dependency>
             <groupId>com.agapsys.libs</groupId>
             <artifactId>security-framework</artifactId>
-            <version>0.2.0-RC1</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         
 		<!-- Provided dependencies -->

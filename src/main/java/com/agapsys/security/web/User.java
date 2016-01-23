@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Agapsys Tecnologia Ltda-ME.
+ * Copyright 2016 Agapsys Tecnologia Ltda-ME.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package com.agapsys.security.web;
 
-/** Represents a HTTP method. */
-public enum HttpMethod {
-	GET,
-	HEAD,
-	OPTIONS,
-	POST,
-	PUT,
-	TRACE;
+import java.util.Set;
+
+/**
+ *
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
+public interface User {
+	public Set<String> getRoles();
+	
+	public boolean isAdmin();
 }
