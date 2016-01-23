@@ -22,13 +22,18 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public abstract class WebSecurityManager implements com.agapsys.security.SecurityManager {
+public abstract class AbstractWebSecurityManager implements com.agapsys.security.SecurityManager {
+	
 	private final AttributeService attributeService = AttributeService.getInstance();
 	
+	public final User getUser() {
+		return getUser(getRequest());
+	}
+
 	protected abstract User getUser(HttpServletRequest request);
 	
-	private User getUser() {
-		return getUser(getRequest());
+	protected boolean isAllowed(HttpServletRequest request) {
+		return true;
 	}
 	
 	protected final HttpServletRequest getRequest() {
@@ -41,6 +46,10 @@ public abstract class WebSecurityManager implements com.agapsys.security.Securit
 	
 	@Override
 	public final boolean isAllowed(String[] requiredRoles) {
+		
+		if (!isAllowed(getRequest()))
+			return false;
+			
 		for (String requiredRole : requiredRoles) {
 			if (!getUser().getRoles().contains(requiredRole))
 				return false;
@@ -51,10 +60,6 @@ public abstract class WebSecurityManager implements com.agapsys.security.Securit
 
 	@Override
 	public final void onNotAllowed() {
-		if (getUser() == null) {
-			getResponse().setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		} else {
-			getResponse().setStatus(HttpServletResponse.SC_FORBIDDEN);
-		}
+		throw new NotAllowedException(getUser());
 	}	
 }

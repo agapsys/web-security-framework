@@ -15,14 +15,18 @@
  */
 package com.agapsys.security.web;
 
-import java.util.Set;
-
 /**
- * Represents an application user
+ *
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public interface User {
-	public Set<String> getRoles();
+public class NotAllowedException extends RuntimeException {
+	private final User user;
 	
-	public boolean isAdmin();
+	NotAllowedException(User user) {
+		this.user = user;
+	}
+	
+	public User getUser() {
+		return user;
+	}
 }
