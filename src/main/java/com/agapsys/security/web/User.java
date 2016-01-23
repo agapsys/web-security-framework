@@ -15,13 +15,14 @@
  */
 package com.agapsys.security.web;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * Represents an application user
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public interface User {
+public interface User extends Serializable {
 	public Set<String> getRoles();
 	
 	public boolean isAdmin();
