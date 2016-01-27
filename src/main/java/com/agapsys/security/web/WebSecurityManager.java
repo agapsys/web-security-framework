@@ -56,6 +56,9 @@ public abstract class WebSecurityManager implements com.agapsys.security.Securit
 		if (currentUser == null)
 			return false;
 		
+		if (currentUser.isAdmin())
+			return true;
+		
 		for (String requiredRole : requiredRoles) {
 			if (!getCurrentUser().getRoles().contains(requiredRole))
 				return false;
