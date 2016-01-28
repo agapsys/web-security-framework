@@ -40,6 +40,9 @@ public class WebSecurity extends Security {
 		Security.init(classLoader, securityManager, securedClasses);
 	}
 	
+	public static WebSecurityManager getSecurityManager() {
+		return (WebSecurityManager) Security.getSecurityManager();
+	}
 	
 	public static User getCurrentUser() {
 		return ((WebSecurityManager)getSecurityManager()).getCurrentUser();
