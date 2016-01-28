@@ -17,24 +17,59 @@ package com.agapsys.test;
 
 import com.agapsys.http.HttpClient;
 import com.agapsys.http.HttpGet;
+import com.agapsys.http.HttpHeader;
 import com.agapsys.http.HttpResponse;
+import com.agapsys.http.HttpResponse.StringResponse;
 import com.agapsys.security.web.SessionCsrfSecurityManager;
 import com.agapsys.security.web.WebApplicationFilter;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.ServletContainerBuilder;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
-import com.agapsys.test.TestUtils.LoginType;
-import com.agapsys.test.app.SessionServlet;
+import com.agapsys.test.app.CsrfServlet;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 public class CsrfServletTest {
 	// CLASS SCOPE =============================================================
+	private static final String BASE_URL = "/csrf";
+	
 	@BeforeClass
 	public static void beforeClass() {
 		MockedWebSecurity.allowMultipleInitialization();
 		MockedWebSecurity.init(new SessionCsrfSecurityManager(), "com.agapsys.test.app.CsrfServlet");
+	}
+	
+	public static enum LoginType {
+		SIMPLE(BASE_URL + "/doSimpleLogin"),
+		EXTRA(BASE_URL + "/doExtraLogin"),
+		ADMIN(BASE_URL + "/doAdminLogin");
+		
+		private final String uri;
+		
+		private LoginType(String uri) {
+			this.uri = uri;
+		}
+		
+		public String getUri() {
+			return uri;
+		}
+	}
+	
+	public static HttpClient doLogin(ServletContainer sc, LoginType loginType, boolean assignCsrf) {
+		if (loginType == null)
+			throw new IllegalArgumentException("Login type must be informed");
+		
+		HttpClient client = new HttpClient();
+		StringResponse resp = sc.doRequest(client, new HttpGet(loginType.getUri()));
+		HttpHeader csrfHeader = resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER);
+		Assert.assertNotNull(csrfHeader);
+		System.out.println(String.format("CSRF token: %s", csrfHeader.getValue()));
+		if (assignCsrf)
+			client.addDefaultHeaders(csrfHeader);
+		
+		return client;
 	}
 	// =========================================================================
 	
@@ -46,7 +81,7 @@ public class CsrfServletTest {
 		sc = new ServletContainerBuilder()
 			.addRootContext()
 				.registerFilter(WebApplicationFilter.class, "/*")
-				.registerServlet(SessionServlet.class)
+				.registerServlet(CsrfServlet.class)
 				.setErrorHandler(new StacktraceErrorHandler())
 			.endContext()
 		.build();
@@ -62,7 +97,7 @@ public class CsrfServletTest {
 	public void publicGetTest() {
 		HttpResponse.StringResponse resp;
 		HttpClient client;
-		String uri = "/session/publicGet";
+		String uri = BASE_URL + "/publicGet";
 		
 		// Unlogged access -----------------------------------------------------
 		resp = sc.doRequest(new HttpGet(uri));
@@ -70,19 +105,19 @@ public class CsrfServletTest {
 		// ---------------------------------------------------------------------
 		
 		// Simple user ---------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.SIMPLE);
+		client = doLogin(sc, LoginType.SIMPLE, true);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStringResponse(200, "OK", resp);
 		// ---------------------------------------------------------------------
 		
 		// Extra user ----------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.EXTRA);
+		client = doLogin(sc, LoginType.EXTRA, true);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStringResponse(200, "OK", resp);
 		// ---------------------------------------------------------------------
 		
 		// Admin user ---------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.ADMIN);
+		client = doLogin(sc, LoginType.ADMIN, true);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStringResponse(200, "OK", resp);
 		// ---------------------------------------------------------------------
@@ -92,27 +127,39 @@ public class CsrfServletTest {
 	public void securedGetTest() {
 		HttpResponse.StringResponse resp;
 		HttpClient client;
-		String uri = "/session/securedGet";
+		String uri = BASE_URL + "/securedGet";
 		
 		// Unlogged access -----------------------------------------------------
 		resp = sc.doRequest(new HttpGet(uri));
 		TestUtils.assertStatus(401, resp);
 		// ---------------------------------------------------------------------
 		
-		// Simple user ---------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.SIMPLE);
+		// Simple user without CSRF token --------------------------------------
+		client = doLogin(sc, LoginType.SIMPLE, false);
+		resp = sc.doRequest(client, new HttpGet(uri));
+		TestUtils.assertStatus(403, resp);
+		// ---------------------------------------------------------------------
+		
+		// Simple user wit CSRF token ------------------------------------------
+		client = doLogin(sc, LoginType.SIMPLE, true);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStringResponse(200, "OK", resp);
 		// ---------------------------------------------------------------------
 		
 		// Extra user ----------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.EXTRA);
+		client = doLogin(sc, LoginType.EXTRA, true);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStringResponse(200, "OK", resp);
 		// ---------------------------------------------------------------------
 		
-		// Admin user ---------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.ADMIN);
+		// Admin user without CSRF ---------------------------------------------
+		client = doLogin(sc, LoginType.ADMIN, false);
+		resp = sc.doRequest(client, new HttpGet(uri));
+		TestUtils.assertStatus(403, resp);
+		// ---------------------------------------------------------------------
+		
+		// Admin user with CSRF-------------------------------------------------
+		client = doLogin(sc, LoginType.ADMIN, true);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStringResponse(200, "OK", resp);
 		// ---------------------------------------------------------------------
@@ -122,7 +169,7 @@ public class CsrfServletTest {
 	public void extraSecuredGetTest() {
 		HttpResponse.StringResponse resp;
 		HttpClient client;
-		String uri = "/session/extraSecuredGet";
+		String uri = BASE_URL + "/extraSecuredGet";
 		
 		// Unlogged access -----------------------------------------------------
 		resp = sc.doRequest(new HttpGet(uri));
@@ -130,19 +177,31 @@ public class CsrfServletTest {
 		// ---------------------------------------------------------------------
 		
 		// Simple user ---------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.SIMPLE);
+		client = doLogin(sc, LoginType.SIMPLE, true);
+		resp = sc.doRequest(client, new HttpGet(uri));
+		TestUtils.assertStatus(403, resp);
+		// ---------------------------------------------------------------------
+		
+		// Extra user without CSRF token --------------------------------------
+		client = doLogin(sc, LoginType.EXTRA, false);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStatus(403, resp);
 		// ---------------------------------------------------------------------
 		
 		// Extra user ----------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.EXTRA);
+		client = doLogin(sc, LoginType.EXTRA, true);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStringResponse(200, "OK", resp);
 		// ---------------------------------------------------------------------
 		
-		// Admin user ---------------------------------------------------------
-		client = TestUtils.doSessionLogin(sc, LoginType.ADMIN);
+		// Admin user without CSRF ---------------------------------------------
+		client = doLogin(sc, LoginType.ADMIN, false);
+		resp = sc.doRequest(client, new HttpGet(uri));
+		TestUtils.assertStatus(403, resp);
+		// ---------------------------------------------------------------------
+		
+		// Admin user with CSRF-------------------------------------------------
+		client = doLogin(sc, LoginType.ADMIN, true);
 		resp = sc.doRequest(client, new HttpGet(uri));
 		TestUtils.assertStringResponse(200, "OK", resp);
 		// ---------------------------------------------------------------------
