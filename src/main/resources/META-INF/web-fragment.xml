@@ -29,6 +29,7 @@ limitations under the License.
 		<filter-name>com.agapsys.security.web.WebApplicationFilter</filter-name>
 		<filter-class>com.agapsys.security.web.WebApplicationFilter</filter-class>
 	</filter>
+	
 	<filter-mapping>
 		<filter-name>com.agapsys.security.web.WebApplicationFilter</filter-name>
 		<url-pattern>/*</url-pattern>
