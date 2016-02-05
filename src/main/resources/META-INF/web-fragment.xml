@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <web-fragment>
-	<name>web-security-framework</name>
+	<name>com.agapsys.libs.web-security-framework</name>
 	
 	<filter>
 		<filter-name>com.agapsys.security.web.WebApplicationFilter</filter-name>
