@@ -39,11 +39,11 @@ public abstract class WebSecurityManager implements com.agapsys.security.Securit
 	}
 	
 	protected final HttpServletRequest getRequest() {
-		return (HttpServletRequest) attributeService.getAttribute(WebApplicationFilter.ATTR_HTTP_REQUEST);
+		return (HttpServletRequest) attributeService.getAttribute(WebSecurityFilter.ATTR_HTTP_REQUEST);
 	}
 	
 	protected final HttpServletResponse getResponse() {
-		return (HttpServletResponse) attributeService.getAttribute(WebApplicationFilter.ATTR_HTTP_RESPONSE);
+		return (HttpServletResponse) attributeService.getAttribute(WebSecurityFilter.ATTR_HTTP_RESPONSE);
 	}
 	
 	@Override

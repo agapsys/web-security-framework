@@ -21,7 +21,7 @@ import com.agapsys.http.HttpHeader;
 import com.agapsys.http.HttpResponse;
 import com.agapsys.http.HttpResponse.StringResponse;
 import com.agapsys.security.web.SessionCsrfSecurityManager;
-import com.agapsys.security.web.WebApplicationFilter;
+import com.agapsys.security.web.WebSecurityFilter;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.ServletContainerBuilder;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
@@ -80,7 +80,7 @@ public class CsrfServletTest {
 	public void before() {
 		sc = new ServletContainerBuilder()
 			.addRootContext()
-				.registerFilter(WebApplicationFilter.class, "/*")
+				.registerFilter(WebSecurityFilter.class, "/*")
 				.registerServlet(CsrfServlet.class)
 				.setErrorHandler(new StacktraceErrorHandler())
 			.endContext()

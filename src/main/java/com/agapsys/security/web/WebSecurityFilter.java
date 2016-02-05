@@ -26,10 +26,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class WebApplicationFilter implements Filter {
+public class WebSecurityFilter implements Filter {
 	// CLASS SCOPE =============================================================
-	public static final String ATTR_HTTP_REQUEST  = WebApplicationFilter.class.getName() + ".httpRequest";
-	public static final String ATTR_HTTP_RESPONSE = WebApplicationFilter.class.getName() + ".httpResponse";
+	public static final String ATTR_HTTP_REQUEST  = WebSecurityFilter.class.getName() + ".httpRequest";
+	public static final String ATTR_HTTP_RESPONSE = WebSecurityFilter.class.getName() + ".httpResponse";
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
@@ -48,6 +48,15 @@ public class WebApplicationFilter implements Filter {
 		
 		try {
 			chain.doFilter(request, response);
+		} catch (NotAllowedException ignored) {
+			User currentUser = WebSecurity.getCurrentUser();
+			
+			if (currentUser == null) {
+				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			} else {
+				resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			}
+			
 		} finally {
 			attributeService.destroyAttributes();
 		}

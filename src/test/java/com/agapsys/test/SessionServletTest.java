@@ -19,7 +19,7 @@ import com.agapsys.http.HttpClient;
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpResponse;
 import com.agapsys.security.web.SessionSecurityManager;
-import com.agapsys.security.web.WebApplicationFilter;
+import com.agapsys.security.web.WebSecurityFilter;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.ServletContainerBuilder;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
@@ -71,7 +71,7 @@ public class SessionServletTest {
 	public void before() {
 		sc = new ServletContainerBuilder()
 			.addRootContext()
-				.registerFilter(WebApplicationFilter.class, "/*")
+				.registerFilter(WebSecurityFilter.class, "/*")
 				.registerServlet(SessionServlet.class)
 				.setErrorHandler(new StacktraceErrorHandler())
 			.endContext()

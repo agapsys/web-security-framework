@@ -16,15 +16,12 @@
 package com.agapsys.test.app;
 
 import com.agapsys.security.Secured;
-import com.agapsys.security.web.NotAllowedException;
-import com.agapsys.security.web.User;
 import com.agapsys.security.web.WebSecurity;
 import com.agapsys.web.action.dispatcher.ActionServlet;
 import com.agapsys.web.action.dispatcher.HttpExchange;
 import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -71,20 +68,5 @@ public class SessionServlet extends ActionServlet {
 	@Secured("ROLE")
 	public void extraSecuredGet(HttpExchange exchange) throws IOException {
 		exchange.getResponse().getWriter().print("OK");
-	}
-
-	@Override
-	protected boolean onError(HttpExchange exchange, Throwable throwable) {
-		if (throwable instanceof NotAllowedException) {
-			User currentUser = WebSecurity.getCurrentUser();
-			
-			if (currentUser == null) {
-				exchange.getResponse().setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			} else {
-				exchange.getResponse().setStatus(HttpServletResponse.SC_FORBIDDEN);
-			}
-			return false;
-		}
-		return super.onError(exchange, throwable);
 	}
 }
