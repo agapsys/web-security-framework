@@ -45,15 +45,29 @@ public class WebSecurity extends Security {
 	}
 	
 	public static User getCurrentUser() {
-		return ((WebSecurityManager)getSecurityManager()).getCurrentUser();
+		WebSecurityManager securityManager = getSecurityManager();
+		if (securityManager != null)
+			return securityManager.getCurrentUser();
+		
+		return null;
 	}
 	
 	public static void setCurrentUser(User user) {
-		((WebSecurityManager)getSecurityManager()).setCurrentUser(user);
+		WebSecurityManager securityManager = getSecurityManager();
+		
+		if (securityManager == null)
+			throw new RuntimeException("There is no security manager");
+		
+		securityManager.setCurrentUser(user);
 	}
 	
 	public static void unregisterCurrentUser() {
-		((WebSecurityManager)getSecurityManager()).unregisterCurrentUser();
+		WebSecurityManager securityManager = getSecurityManager();
+
+		if (securityManager == null)
+			throw new RuntimeException("There is no security manager");
+		
+		securityManager.unregisterCurrentUser();
 	}
 	// =========================================================================
 	
