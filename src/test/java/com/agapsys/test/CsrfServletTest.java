@@ -21,6 +21,7 @@ import com.agapsys.http.HttpHeader;
 import com.agapsys.http.HttpResponse;
 import com.agapsys.http.HttpResponse.StringResponse;
 import com.agapsys.security.web.SessionCsrfSecurityManager;
+import com.agapsys.security.web.WebSecurity;
 import com.agapsys.security.web.WebSecurityFilter;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.ServletContainerBuilder;
@@ -37,8 +38,7 @@ public class CsrfServletTest {
 	
 	@BeforeClass
 	public static void beforeClass() {
-		MockedWebSecurity.allowMultipleInitialization();
-		MockedWebSecurity.init(new SessionCsrfSecurityManager(), "com.agapsys.test.app.CsrfServlet");
+		WebSecurity.init(new SessionCsrfSecurityManager(), "com.agapsys.test.app.CsrfServlet");
 	}
 	
 	public static enum LoginType {

@@ -19,6 +19,7 @@ import com.agapsys.http.HttpClient;
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpResponse;
 import com.agapsys.security.web.SessionSecurityManager;
+import com.agapsys.security.web.WebSecurity;
 import com.agapsys.security.web.WebSecurityFilter;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.ServletContainerBuilder;
@@ -34,8 +35,7 @@ public class SessionServletTest {
 	
 	@BeforeClass
 	public static void beforeClass() {
-		MockedWebSecurity.allowMultipleInitialization();
-		MockedWebSecurity.init(new SessionSecurityManager(), "com.agapsys.test.app.SessionServlet");
+		WebSecurity.init(new SessionSecurityManager(), "com.agapsys.test.app.SessionServlet");
 	}
 	
 	public static enum LoginType {
