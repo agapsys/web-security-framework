@@ -26,12 +26,12 @@ limitations under the License.
 	</ordering>
 		
 	<filter>
-		<filter-name>com.agapsys.security.web.WebApplicationFilter</filter-name>
-		<filter-class>com.agapsys.security.web.WebApplicationFilter</filter-class>
+		<filter-name>com.agapsys.security.web.WebSecurityFilter</filter-name>
+		<filter-class>com.agapsys.security.web.WebSecurityFilter</filter-class>
 	</filter>
 	
 	<filter-mapping>
-		<filter-name>com.agapsys.security.web.WebApplicationFilter</filter-name>
+		<filter-name>com.agapsys.security.web.WebSecurityFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
