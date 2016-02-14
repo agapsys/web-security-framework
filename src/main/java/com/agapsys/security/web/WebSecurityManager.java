@@ -60,7 +60,7 @@ public abstract class WebSecurityManager extends com.agapsys.security.SecurityMa
 			return true;
 		
 		for (String requiredRole : requiredRoles) {
-			if (!getCurrentUser().getRoles().contains(requiredRole))
+			if (!currentUser.getRoles().contains(requiredRole))
 				return false;
 		}
 		
