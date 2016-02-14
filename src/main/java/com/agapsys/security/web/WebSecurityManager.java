@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public abstract class WebSecurityManager implements com.agapsys.security.SecurityManager {
+public abstract class WebSecurityManager extends com.agapsys.security.SecurityManager {
 	
 	private final AttributeService attributeService = AttributeService.getInstance();
 	
@@ -68,7 +68,7 @@ public abstract class WebSecurityManager implements com.agapsys.security.Securit
 	}
 
 	@Override
-	public final void onNotAllowed() {
+	public final void onNotAllowed() throws NotAllowedException {
 		throw new NotAllowedException(getCurrentUser());
 	}	
 }
