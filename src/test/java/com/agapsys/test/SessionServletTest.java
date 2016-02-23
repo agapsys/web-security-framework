@@ -70,12 +70,10 @@ public class SessionServletTest {
 	@Before
 	public void before() {
 		sc = new ServletContainerBuilder()
-			.addRootContext()
-				.registerFilter(WebSecurityFilter.class, "/*")
-				.registerServlet(SessionServlet.class)
-				.setErrorHandler(new StacktraceErrorHandler())
-			.endContext()
-		.build();
+			.registerFilter(WebSecurityFilter.class, "/*")
+			.registerServlet(SessionServlet.class)
+			.setErrorHandler(new StacktraceErrorHandler())
+			.build();
 		sc.startServer();
 	}
 	

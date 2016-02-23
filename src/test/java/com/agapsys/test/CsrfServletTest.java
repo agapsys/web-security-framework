@@ -74,17 +74,18 @@ public class CsrfServletTest {
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
-	ServletContainer sc;
+	private final ServletContainer sc;
+	
+	public CsrfServletTest() {
+		sc = new ServletContainerBuilder()
+			.registerFilter(WebSecurityFilter.class, "/*")
+			.registerServlet(CsrfServlet.class)
+			.setErrorHandler(new StacktraceErrorHandler())
+			.build();
+	}
 	
 	@Before
 	public void before() {
-		sc = new ServletContainerBuilder()
-			.addRootContext()
-				.registerFilter(WebSecurityFilter.class, "/*")
-				.registerServlet(CsrfServlet.class)
-				.setErrorHandler(new StacktraceErrorHandler())
-			.endContext()
-		.build();
 		sc.startServer();
 	}
 	
