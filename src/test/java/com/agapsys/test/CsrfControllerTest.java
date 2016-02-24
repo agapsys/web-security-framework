@@ -24,7 +24,6 @@ import com.agapsys.security.web.SessionCsrfSecurityManager;
 import com.agapsys.security.web.WebSecurity;
 import com.agapsys.security.web.WebSecurityFilter;
 import com.agapsys.sevlet.container.ServletContainer;
-import com.agapsys.sevlet.container.ServletContainerBuilder;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
 import com.agapsys.test.app.CsrfController;
 import org.junit.After;
@@ -32,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-public class CsrfServletTest {
+public class CsrfControllerTest {
 	// CLASS SCOPE =============================================================
 	private static final String BASE_URL = "/csrf";
 	
@@ -76,10 +75,10 @@ public class CsrfServletTest {
 	// INSTANCE SCOPE ==========================================================
 	private final ServletContainer sc;
 	
-	public CsrfServletTest() {
+	public CsrfControllerTest() {
 		sc = new ServletContainerBuilder()
+			.registerController(CsrfController.class)
 			.registerFilter(WebSecurityFilter.class, "/*")
-			.registerServlet(CsrfController.class, "/csrf/*")
 			.setErrorHandler(new StacktraceErrorHandler())
 			.build();
 	}

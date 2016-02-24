@@ -22,7 +22,6 @@ import com.agapsys.security.web.SessionSecurityManager;
 import com.agapsys.security.web.WebSecurity;
 import com.agapsys.security.web.WebSecurityFilter;
 import com.agapsys.sevlet.container.ServletContainer;
-import com.agapsys.sevlet.container.ServletContainerBuilder;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
 import com.agapsys.test.app.SessionController;
 import org.junit.After;
@@ -70,8 +69,8 @@ public class SessionControllerTest {
 	@Before
 	public void before() {
 		sc = new ServletContainerBuilder()
+			.registerController(SessionController.class)
 			.registerFilter(WebSecurityFilter.class, "/*")
-			.registerServlet(SessionController.class, "/session/*")
 			.setErrorHandler(new StacktraceErrorHandler())
 			.build();
 		sc.startServer();
