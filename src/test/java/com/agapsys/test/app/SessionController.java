@@ -15,20 +15,20 @@
  */
 package com.agapsys.test.app;
 
+import com.agapsys.rcf.Controller;
+import com.agapsys.rcf.HttpExchange;
+import com.agapsys.rcf.WebAction;
+import com.agapsys.rcf.WebController;
 import com.agapsys.security.Secured;
 import com.agapsys.security.web.WebSecurity;
-import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.HttpExchange;
-import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
-import javax.servlet.annotation.WebServlet;
 
 /**
  *
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-@WebServlet("/session/*")
-public class SessionServlet extends ActionServlet {
+@WebController("session")
+public class SessionController extends Controller {
 	@WebAction
 	public void doSimpleLogin(HttpExchange exchange) {
 		SimpleUser user = new SimpleUser();

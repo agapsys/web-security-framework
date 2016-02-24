@@ -26,7 +26,7 @@ import com.agapsys.security.web.WebSecurityFilter;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.ServletContainerBuilder;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
-import com.agapsys.test.app.CsrfServlet;
+import com.agapsys.test.app.CsrfController;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,7 +38,7 @@ public class CsrfServletTest {
 	
 	@BeforeClass
 	public static void beforeClass() {
-		WebSecurity.init(new SessionCsrfSecurityManager(), "com.agapsys.test.app.CsrfServlet");
+		WebSecurity.init(new SessionCsrfSecurityManager(), "com.agapsys.test.app.CsrfController");
 	}
 	
 	public static enum LoginType {
@@ -79,7 +79,7 @@ public class CsrfServletTest {
 	public CsrfServletTest() {
 		sc = new ServletContainerBuilder()
 			.registerFilter(WebSecurityFilter.class, "/*")
-			.registerServlet(CsrfServlet.class)
+			.registerServlet(CsrfController.class, "/csrf/*")
 			.setErrorHandler(new StacktraceErrorHandler())
 			.build();
 	}

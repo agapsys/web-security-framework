@@ -24,18 +24,18 @@ import com.agapsys.security.web.WebSecurityFilter;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.ServletContainerBuilder;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
-import com.agapsys.test.app.SessionServlet;
+import com.agapsys.test.app.SessionController;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-public class SessionServletTest {
+public class SessionControllerTest {
 	// CLASS SCOPE =============================================================
 	private static final String BASE_URL = "/session";
 	
 	@BeforeClass
 	public static void beforeClass() {
-		WebSecurity.init(new SessionSecurityManager(), "com.agapsys.test.app.SessionServlet");
+		WebSecurity.init(new SessionSecurityManager(), "com.agapsys.test.app.SessionController");
 	}
 	
 	public static enum LoginType {
@@ -71,7 +71,7 @@ public class SessionServletTest {
 	public void before() {
 		sc = new ServletContainerBuilder()
 			.registerFilter(WebSecurityFilter.class, "/*")
-			.registerServlet(SessionServlet.class)
+			.registerServlet(SessionController.class, "/session/*")
 			.setErrorHandler(new StacktraceErrorHandler())
 			.build();
 		sc.startServer();
